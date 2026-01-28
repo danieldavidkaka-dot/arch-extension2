@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": ">arch // AI Architect",
+  "version": "8.0",
+  "description": "Suite completa: UI, Templates y Snatcher",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://chatgpt.com/",
+    "https://claude.ai/new/",
+    "https://gemini.google.com/*",
+    "https://chat.deepseek.com/*",
+    "https://manus.im/*",
+    "https://manus.im/app",
+    "https://bolt.new/"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chatgpt.com/",
+        "https://claude.ai/new/",
+        "https://gemini.google.com/*",
+        "https://chat.deepseek.com/*",
+        "https://manus.im/*",
+        "https://manus.im/app",
+        "https://bolt.new/"
+      ],
+      "js": [
+        "templates.js",
+        "ui.js",
+        "snatcher.js",
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}
