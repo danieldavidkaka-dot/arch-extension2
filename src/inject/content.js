@@ -3,13 +3,22 @@ console.log(">arch: Main Content Script Loaded");
 
 let currentTextarea = null;
 
-// --- 1. DETECCIÓN INTELIGENTE DEL TEXTAREA ---
+// --- 1. DETECCIÓN INTELIGENTE DEL TEXTAREA (MEJORADA v8.0) ---
+// Reemplaza la función findTextarea anterior por esta:
 function findTextarea() {
+    // 1. Si el usuario ya hizo clic en el chat, usar ese elemento (lo más seguro)
+    if (document.activeElement && 
+       (document.activeElement.tagName === 'TEXTAREA' || document.activeElement.isContentEditable)) {
+        return document.activeElement;
+    }
+
+    // 2. Si no, buscar por selectores conocidos
     const selectors = [
         'textarea[id="prompt-textarea"]',       // ChatGPT
-        'div[contenteditable="true"]',          // Claude / Gemini
-        'textarea[placeholder*="Message"]',     // Generic
-        'textarea'                              // Fallback
+        'div[contenteditable="true"]',          // Claude / Gemini / ChatGPT Nuevo
+        'textarea[data-testid="chat-input"]',   // DeepSeek / Bolt
+        'textarea[placeholder*="Message"]',     // Genérico
+        'textarea'                              // Último recurso
     ];
 
     for (const selector of selectors) {

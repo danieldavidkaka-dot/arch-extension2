@@ -1,48 +1,56 @@
 {
   "manifest_version": 3,
   "name": ">arch // AI Architect",
-  "version": "8.0",
-  "description": "Suite completa: UI, Templates y Snatcher",
+  "version": "1.0",
+  "description": "Suite de Orquestación Creativa y Soporte Técnico para IA.",
   "permissions": [
     "storage"
   ],
   "host_permissions": [
-    "https://chatgpt.com/",
-    "https://claude.ai/new/",
+    "https://chatgpt.com/*",
+    "https://claude.ai/*",
     "https://gemini.google.com/*",
     "https://chat.deepseek.com/*",
     "https://manus.im/*",
-    "https://manus.im/app",
-    "https://bolt.new/"
+    "https://bolt.new/*"
   ],
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "src/pages/popup.html",
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
   },
   "content_scripts": [
     {
       "matches": [
-        "https://chatgpt.com/",
-        "https://claude.ai/new/",
+        "https://chatgpt.com/*",
+        "https://claude.ai/*",
         "https://gemini.google.com/*",
         "https://chat.deepseek.com/*",
         "https://manus.im/*",
-        "https://manus.im/app",
-        "https://bolt.new/"
+        "https://bolt.new/*"
       ],
       "js": [
-        "templates.js",
-        "ui.js",
-        "snatcher.js",
-        "content.js"
+        "src/core/templates.js",
+        "src/inject/ui.js",
+        "src/inject/snatcher.js",
+        "src/inject/content.js"
       ],
       "css": [
-        "styles.css"
+        "assets/styles.css"
       ],
       "run_at": "document_idle"
     }
   ],
   "options_ui": {
-    "page": "options.html",
+    "page": "src/pages/options.html",
     "open_in_tab": true
   }
 }
