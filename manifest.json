@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": ">arch // AI Architect",
-  "version": "1.0",
+  "version": "8.0",
   "description": "Suite de Orquestación Creativa y Soporte Técnico para IA.",
   "permissions": [
     "storage"
@@ -12,7 +12,11 @@
     "https://gemini.google.com/*",
     "https://chat.deepseek.com/*",
     "https://manus.im/*",
-    "https://bolt.new/*"
+    "https://bolt.new/*",
+    "https://lovable.dev/*",
+    "https://grok.com/*",
+    "https://v0.app//*",
+    "https://www.perplexity.ai/*"
   ],
   "action": {
     "default_popup": "src/pages/popup.html",
@@ -35,7 +39,11 @@
         "https://gemini.google.com/*",
         "https://chat.deepseek.com/*",
         "https://manus.im/*",
-        "https://bolt.new/*"
+        "https://bolt.new/*",
+        "https://lovable.dev/*",
+        "https://grok.com/*",
+        "https://v0.app/*",
+        "https://www.perplexity.ai/*"
       ],
       "js": [
         "src/core/templates.js",

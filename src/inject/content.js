@@ -1,115 +1,107 @@
-// content.js - El cerebro que conecta todo (VERSIÓN CORREGIDA V11)
-console.log(">arch: Main Content Script Loaded");
+// src/inject/content.js - VERSION "OBSESIVA" V12
+console.log(">arch: System Initializing...");
 
-let currentTextarea = null;
-
-// --- 1. DETECCIÓN INTELIGENTE DEL TEXTAREA (MEJORADA v8.0) ---
-// Reemplaza la función findTextarea anterior por esta:
-function findTextarea() {
-    // 1. Si el usuario ya hizo clic en el chat, usar ese elemento (lo más seguro)
-    if (document.activeElement && 
-       (document.activeElement.tagName === 'TEXTAREA' || document.activeElement.isContentEditable)) {
-        return document.activeElement;
+// 1. Selector Universal "A prueba de fallos"
+function getActiveTextarea() {
+    // A. Si el usuario ya tiene el foco, usémoslo (Lo más preciso)
+    const active = document.activeElement;
+    if (active && (active.tagName === 'TEXTAREA' || active.isContentEditable)) {
+        return active;
     }
 
-    // 2. Si no, buscar por selectores conocidos
+    // B. Búsqueda por selectores conocidos (Prioridad Alta)
     const selectors = [
-        'textarea[id="prompt-textarea"]',       // ChatGPT
-        'div[contenteditable="true"]',          // Claude / Gemini / ChatGPT Nuevo
-        'textarea[data-testid="chat-input"]',   // DeepSeek / Bolt
-        'textarea[placeholder*="Message"]',     // Genérico
-        'textarea'                              // Último recurso
+        '#prompt-textarea',                  // ChatGPT
+        'div[contenteditable="true"]',       // Claude / Gemini / ChatGPT New
+        'textarea[data-testid="chat-input"]',// DeepSeek / Bolt
+        'textarea[aria-label*="Prompts"]',   // Generic AI
+        'textarea'                           // Fallback
     ];
 
-    for (const selector of selectors) {
-        const el = document.querySelector(selector);
+    for (const sel of selectors) {
+        const el = document.querySelector(sel);
         if (el) return el;
     }
+    
     return null;
 }
 
-// --- 2. INYECCIÓN DE TEXTO (CORREGIDA: Borra antes de pegar) ---
-function insertText(element, text) {
-    if (!element) return;
+// 2. Inyector de Texto Robusto
+function safeInsert(element, text) {
+    if (!element) return false;
     element.focus();
 
-    // A. SELECCIONAR TODO EL TEXTO EXISTENTE (Para sobrescribir)
-    // Esto soluciona el error de que se quede el texto viejo pegado al final
-    try {
-        if (element.tagName === 'TEXTAREA') {
-            element.select(); // Funciona en textareas estándar (ChatGPT antiguo)
-        } else if (element.isContentEditable) {
-            // Funciona en divs editables (Claude, Gemini, ChatGPT nuevo)
-            document.execCommand('selectAll', false, null);
-        }
-    } catch (e) {
-        console.warn(">arch: Selection failed, appending instead.", e);
-    }
-    
-    // B. INSERTAR EL NUEVO TEXTO (Reemplazando la selección)
-    // Intento 1: Comando nativo (funciona en la mayoría)
+    // Estrategia 1: execCommand (Estándar)
+    document.execCommand('selectAll', false, null);
     const success = document.execCommand('insertText', false, text);
-    
-    // Intento 2: Manipulación directa para React (ChatGPT/Claude modernos si falla el anterior)
+
+    // Estrategia 2: React Setter (Si falla la 1)
     if (!success) {
-        if (element.tagName === 'DIV') {
-            element.textContent = text;
+        const proto = element.tagName === 'TEXTAREA' ? window.HTMLTextAreaElement.prototype : window.HTMLElement.prototype;
+        const setNative = Object.getOwnPropertyDescriptor(proto, 'value')?.set || Object.getOwnPropertyDescriptor(proto, 'textContent')?.set;
+        
+        if (setNative) {
+            setNative.call(element, text);
+            element.dispatchEvent(new Event('input', { bubbles: true }));
         } else {
+            // Estrategia 3: Bruta
             element.value = text;
+            element.textContent = text;
         }
-        // Disparar eventos para que React se entere del cambio
-        element.dispatchEvent(new Event('input', { bubbles: true }));
-        element.dispatchEvent(new Event('change', { bubbles: true }));
     }
+    return true;
 }
 
-// --- 3. INICIALIZACIÓN ---
-function initArch() {
-    // A. Inicializar UI Flotante
-    if (window.ArchUI && window.TemplateManager) {
-        window.TemplateManager.getAll().then(templates => {
-            const modes = Object.keys(templates);
+// 3. Inicializador (ESTO ES LO QUE CAMBIÓ)
+function launchArch() {
+    // Verificamos que las dependencias cargaron
+    if (!window.TemplateManager || !window.ArchUI) {
+        console.warn(">arch: Waiting for dependencies...");
+        setTimeout(launchArch, 500); // Reintentar si falta ui.js
+        return;
+    }
+
+    // EVITAR DUPLICADOS: Si ya existe, no hacemos nada
+    if (document.querySelector('.arch-trigger')) return;
+
+    console.log(">arch: Dependencies OK. Launching UI...");
+
+    // Cargamos templates y DIBUJAMOS EL BOTÓN SIN PREGUNTAR
+    window.TemplateManager.getAll().then(templates => {
+        const modes = Object.keys(templates);
+
+        // Creamos la UI flotante inmediatamente
+        window.ArchUI.create(modes, (selectedMode) => {
+            // ESTO ocurre al hacer CLIC, no al cargar
+            const target = getActiveTextarea();
             
-            // Recrear UI solo si no existe ya
-            if (!document.querySelector('.arch-trigger')) {
-                window.ArchUI.create(modes, (selectedMode) => {
-                    const ta = findTextarea();
-                    if (!ta) {
-                        alert(">arch: No input field detected. Click the chat box first.");
-                        return;
-                    }
-                    
-                    const rawTemplate = templates[selectedMode];
-                    let userInput = "";
-                    
-                    // Extraer texto existente para inyectarlo en el template
-                    if (ta.tagName === 'TEXTAREA') userInput = ta.value;
-                    if (ta.tagName === 'DIV') userInput = ta.textContent; // Cuidado: textContent puede traer basura si no se limpia, pero insertText lo arregla
-                    
-                    const finalPrompt = window.TemplateManager.compile(rawTemplate, userInput);
-                    insertText(ta, finalPrompt);
-                });
+            if (!target) {
+                alert(">arch Error: No chat box found. Click explicitly on the text area and try again.");
+                return;
             }
-        });
-    }
 
-    // B. INICIALIZAR SNATCHER (Botón de Descarga)
-    if (window.ArchSnatcher) {
-        // console.log("Inicializando Snatcher...");
-        window.ArchSnatcher.init();
-    }
+            const rawTemplate = templates[selectedMode];
+            // Intentar sacar contexto existente
+            let currentVal = target.value || target.textContent || "";
+            
+            const compiled = window.TemplateManager.compile(rawTemplate, currentVal);
+            safeInsert(target, compiled);
+        });
+
+        console.log(">arch: UI Injected Successfully 🟢");
+    });
 }
 
-// --- 4. BUCLE DE VIGILANCIA (Anti-desaparición) ---
-const observer = new MutationObserver(() => {
-    // Si la página se redibuja y borra nuestro botón, lo recreamos
+// 4. EL VIGILANTE ETERNO (MutationObserver)
+// Este código vigila si la URL cambia (navegación SPA) o si el botón se borra
+const watcher = new MutationObserver(() => {
     if (!document.querySelector('.arch-trigger')) {
-         initArch();
+        launchArch();
     }
 });
 
-// Observar cambios en el body para reactivar si es necesario
-observer.observe(document.body, { childList: true, subtree: true });
+// Iniciamos vigilancia sobre todo el documento
+watcher.observe(document.body, { childList: true, subtree: true });
 
-// Arranque inicial
-setTimeout(initArch, 1000);
+// Primer intento de lanzamiento
+setTimeout(launchArch, 1000);

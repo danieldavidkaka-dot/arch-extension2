@@ -1,144 +1,185 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@500;700&display=swap');
+/* assets/styles.css - >arch v8.0 Official Styles */
 
-/* --- 1. EL BOTÓN FANTASMA (>arch Trigger) --- */
+:root {
+  --arch-neon: #00ff9d;
+  --arch-bg: #0a0a0a;
+  --arch-panel: #111111;
+  --arch-dim: rgba(0, 255, 157, 0.1);
+}
+
+/* ==========================================================================
+   1. BOTÓN FLOTANTE PRINCIPAL (Trigger)
+   ========================================================================== */
 .arch-trigger {
-    position: fixed;
-    z-index: 99999;
-    
-    background: rgba(10, 10, 10, 0.7);
-    color: #00ff9d;
-    border: 1px solid rgba(0, 255, 157, 0.2);
-    padding: 5px 12px;
-    border-radius: 6px;
-    
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: bold;
-    letter-spacing: -0.5px;
-    
-    cursor: grab; /* Cursor de mano abierta */
-    user-select: none;
-    touch-action: none;
-    
-    transition: all 0.2s ease;
-    backdrop-filter: blur(5px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background-color: #000;
+  color: var(--arch-neon);
+  border: 1px solid var(--arch-neon);
+  border-radius: 50%; /* Círculo perfecto */
+  font-family: 'Courier New', monospace;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  
+  /* CRÍTICO: El z-index más alto permitido por el navegador */
+  z-index: 2147483647 !important;
+  
+  /* Efectos Visuales */
+  box-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.arch-trigger:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px var(--arch-neon);
+  background-color: var(--arch-neon);
+  color: #000;
 }
 
 .arch-trigger:active {
-    cursor: grabbing; /* Cursor de mano cerrada al arrastrar */
-    background: #00ff9d;
-    color: #000;
-    box-shadow: 0 0 15px rgba(0, 255, 157, 0.4);
-    transform: scale(1.05);
+  transform: scale(0.95);
 }
 
-/* --- 2. EL MENÚ (Glass Grid System) --- */
-.arch-menu {
-    position: fixed;
-    z-index: 99999;
-    display: none; /* Oculto por defecto */
-    
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    
-    background: rgba(18, 18, 18, 0.95);
-    border: 1px solid #333;
-    padding: 8px;
-    border-radius: 8px;
-    width: 260px;
-    
-    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-    backdrop-filter: blur(12px);
-    animation: arch-fade-in 0.15s ease-out;
+/* ==========================================================================
+   2. VENTANA MODAL (El Menú de Comandos)
+   ========================================================================== */
+.arch-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.7); /* Fondo oscuro semitransparente */
+  backdrop-filter: blur(2px); /* Pequeño desenfoque del fondo */
+  z-index: 2147483647 !important; /* Igual de alto que el trigger */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: archFadeIn 0.2s ease-out;
 }
 
-/* Items del menú */
-.arch-item {
-    padding: 8px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.03);
-    
-    color: #a1a1aa;
-    font-family: 'Inter', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    
-    border-left: 3px solid transparent; /* El color se define abajo */
-    transition: all 0.15s;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.arch-modal {
+  background: var(--arch-bg);
+  border: 1px solid var(--arch-neon);
+  width: 500px;
+  max-width: 90vw;
+  max-height: 80vh;
+  border-radius: 8px;
+  box-shadow: 0 0 30px rgba(0, 255, 157, 0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
-.arch-item:hover {
-    background: #27272a;
-    color: #fff;
-    padding-left: 14px; /* Pequeño desplazamiento a la derecha */
+.arch-modal-header {
+  padding: 12px 16px;
+  background: var(--arch-panel);
+  border-bottom: 1px solid #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* Categorías de Color (Data Attributes) */
-.arch-item[data-type="CORE"] { border-left-color: #00ff9d; } /* Verde */
-.arch-item[data-type="FIX"]  { border-left-color: #ef4444; } /* Rojo */
-.arch-item[data-type="UX"]   { border-left-color: #8b5cf6; } /* Violeta */
-.arch-item[data-type="ARCH"] { border-left-color: #f59e0b; } /* Naranja */
-
-@keyframes arch-fade-in {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
+.arch-title {
+  color: var(--arch-neon);
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 14px;
+  letter-spacing: 1px;
 }
 
-/* --- 3. SNATCHER (Botón de Descarga) --- */
-.arch-snatch-btn {
-    position: absolute;
-    top: 8px;
-    right: 60px; /* Separado para no tapar el botón "Copy" nativo de ChatGPT */
-    z-index: 100;
-    
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    
-    background: rgba(30, 30, 30, 0.85);
-    color: #a1a1aa;
-    border: 1px solid #444;
-    border-radius: 4px;
-    padding: 4px 8px;
-    
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    font-weight: 700;
-    cursor: pointer;
-    
-    opacity: 0; /* Invisible hasta hacer hover */
-    transform: translateY(-2px);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(4px);
+.arch-close-btn {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 18px;
+}
+.arch-close-btn:hover { color: #fff; }
+
+.arch-grid {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Grid responsivo */
+  gap: 10px;
+  overflow-y: auto; /* Scroll si hay muchos botones */
 }
 
-/* Mostrar botón cuando el mouse entra en el bloque de código */
-pre:hover .arch-snatch-btn {
-    opacity: 1;
-    transform: translateY(0);
+/* Botones dentro del Modal */
+.arch-btn {
+  background: #111;
+  border: 1px solid #333;
+  color: #ccc;
+  padding: 12px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  transition: all 0.2s;
 }
 
-.arch-snatch-btn:hover {
-    background: rgba(0, 255, 157, 0.1);
-    color: #00ff9d;
-    border-color: #00ff9d;
-    box-shadow: 0 2px 8px rgba(0, 255, 157, 0.15);
+.arch-btn:hover {
+  border-color: var(--arch-neon);
+  color: var(--arch-neon);
+  background: rgba(0, 255, 157, 0.05);
+  transform: translateY(-2px);
 }
 
-/* Estado de Éxito (Verde) */
-.arch-snatch-btn.success {
-    background: #00ff9d;
-    color: #000;
-    border-color: #00ff9d;
+/* ==========================================================================
+   3. SNATCHER (Botón de Descarga Contexto)
+   ========================================================================== */
+.arch-snatcher-btn {
+  position: fixed;
+  top: 15px; /* Arriba a la derecha */
+  right: 70px; /* Un poco separado de los botones nativos */
+  background: #111;
+  color: #fff;
+  border: 1px solid #444;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: sans-serif;
+  cursor: pointer;
+  z-index: 9999;
+  opacity: 0.7;
+  transition: opacity 0.2s;
 }
 
-.arch-snatch-btn span {
-    font-size: 12px;
-    line-height: 1;
+.arch-snatcher-btn:hover {
+  opacity: 1;
+  border-color: var(--arch-neon);
+  color: var(--arch-neon);
+}
+
+/* ==========================================================================
+   4. ANIMACIONES
+   ========================================================================== */
+@keyframes archFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Scrollbar personalizado estilo Hacker */
+.arch-grid::-webkit-scrollbar {
+  width: 6px;
+}
+.arch-grid::-webkit-scrollbar-track {
+  background: #000;
+}
+.arch-grid::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+.arch-grid::-webkit-scrollbar-thumb:hover {
+  background: var(--arch-neon);
 }
