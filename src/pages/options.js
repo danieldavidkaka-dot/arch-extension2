@@ -1,99 +1,106 @@
-// options.js
+// src/pages/options.js - Studio Logic v12.0
 console.log(">arch: Studio Logic Loaded");
 
-const els = {
-    list: document.getElementById('templateList'),
-    name: document.getElementById('editName'),
-    content: document.getElementById('editContent'),
-    btnSave: document.getElementById('btnSave'),
-    btnNew: document.getElementById('btnNew'),
-    btnDelete: document.getElementById('btnDelete'),
-    btnReset: document.getElementById('btnReset'),
-    status: document.getElementById('statusMsg')
-};
+document.addEventListener('DOMContentLoaded', async () => {
+    
+    // Referencias al DOM (Validamos que existan para evitar errores null)
+    const listContainer = document.getElementById('templateList');
+    const nameInput = document.getElementById('templateName');
+    const contentInput = document.getElementById('templateContent');
+    const saveBtn = document.getElementById('saveBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const newBtn = document.getElementById('newBtn');
 
-let currentTemplates = {};
+    if (!listContainer || !saveBtn) {
+        console.error("Critical DOM elements missing in options.html");
+        return;
+    }
 
-// Cargar templates al inicio
-async function init() {
-    // Usamos el TemplateManager que ya definimos en src/templates.js
-    // Nota: Como options.html carga src/templates.js antes, window.TemplateManager existe.
-    currentTemplates = await window.TemplateManager.getAll();
-    renderList();
-}
-
-function renderList() {
-    els.list.innerHTML = '';
-    Object.keys(currentTemplates).forEach(key => {
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.textContent = key;
-        div.onclick = () => loadTemplate(key);
+    // Estado local
+    let currentMode = 'NEW'; // 'NEW' o 'EDIT'
+    
+    // --- 1. RENDERIZAR LISTA ---
+    async function renderList() {
+        listContainer.innerHTML = '';
+        const templates = await window.TemplateManager.getAll();
         
-        if (els.name.value === key) div.classList.add('active');
-        els.list.appendChild(div);
-    });
-}
+        // Separar Core vs Custom para visualización (opcional)
+        Object.keys(templates).forEach(key => {
+            const item = document.createElement('div');
+            item.className = 'template-item';
+            item.textContent = key;
+            
+            // Si está en la librería estática, lo marcamos diferente visualmente
+            const isCore = window.ARCH_LIBRARY && window.ARCH_LIBRARY[key];
+            if (isCore) item.style.color = '#a1a1aa'; // Gris para los core
 
-function loadTemplate(key) {
-    els.name.value = key;
-    els.content.value = currentTemplates[key];
-    
-    // Feedback visual en la lista
-    document.querySelectorAll('.item').forEach(i => i.classList.remove('active'));
-    // Re-render simple para marcar activo
-    renderList();
-}
+            item.onclick = () => loadTemplate(key, templates[key], isCore);
+            listContainer.appendChild(item);
+        });
+    }
 
-// --- ACCIONES ---
-
-els.btnSave.addEventListener('click', async () => {
-    const name = els.name.value.trim().toUpperCase().replace(/\s+/g, '_');
-    const content = els.content.value;
-    
-    if (!name || !content) return showStatus('Error: Name/Content empty', true);
-    
-    await window.TemplateManager.save(name, content);
-    currentTemplates[name] = content; // Actualizar memoria local
-    
-    showStatus('Saved successfully!');
-    renderList();
-});
-
-els.btnNew.addEventListener('click', () => {
-    els.name.value = "NEW_MODE";
-    els.content.value = "> **[NEW MODE]**\n> TARGET: ...\n> TASK: {{INPUT}}";
-    els.name.focus();
-});
-
-els.btnDelete.addEventListener('click', async () => {
-    const name = els.name.value;
-    if (confirm(`Delete mode ${name}?`)) {
-        await window.TemplateManager.delete(name);
-        delete currentTemplates[name];
+    // --- 2. CARGAR TEMPLATE EN EDITOR ---
+    function loadTemplate(name, content, isCore) {
+        currentMode = 'EDIT';
+        nameInput.value = name;
+        contentInput.value = content;
         
-        els.name.value = '';
-        els.content.value = '';
+        // Resaltar item activo
+        document.querySelectorAll('.template-item').forEach(el => el.classList.remove('active'));
+        
+        // Bloquear edición de nombre si es Core (opcional)
+        if (isCore) {
+            deleteBtn.style.display = 'none';
+            // nameInput.disabled = true; 
+        } else {
+            deleteBtn.style.display = 'block';
+            nameInput.disabled = false;
+        }
+    }
+
+    // --- 3. GUARDAR ---
+    saveBtn.addEventListener('click', async () => {
+        const name = nameInput.value.trim();
+        const content = contentInput.value;
+        
+        if (!name) { alert("Please enter a template name"); return; }
+        
+        // Verificar si sobrescribe un Core
+        if (window.ARCH_LIBRARY && window.ARCH_LIBRARY[name]) {
+            if(!confirm(`Warning: [${name}] is a Core Template. Saving will override it locally. Continue?`)) {
+                return;
+            }
+        }
+
+        await window.TemplateManager.save(name, content);
+        alert("Saved!");
         renderList();
-        showStatus('Deleted.');
+    });
+
+    // --- 4. BORRAR ---
+    deleteBtn.addEventListener('click', async () => {
+        const name = nameInput.value.trim();
+        if(confirm(`Delete template [${name}]?`)) {
+            await window.TemplateManager.delete(name);
+            resetEditor();
+            renderList();
+        }
+    });
+
+    // --- 5. NUEVO TEMPLATE ---
+    newBtn.addEventListener('click', () => {
+        resetEditor();
+    });
+
+    function resetEditor() {
+        currentMode = 'NEW';
+        nameInput.value = '';
+        contentInput.value = '';
+        nameInput.disabled = false;
+        deleteBtn.style.display = 'none';
+        nameInput.focus();
     }
+
+    // Inicializar
+    renderList();
 });
-
-els.btnReset.addEventListener('click', async () => {
-    if (confirm("Factory Reset: This will delete ALL custom modes. Sure?")) {
-        await window.TemplateManager.reset();
-        location.reload(); // Recargar página para traer defaults
-    }
-});
-
-function showStatus(msg, isError = false) {
-    els.status.textContent = msg;
-    els.status.style.color = isError ? '#ef4444' : '#00ff9d';
-    setTimeout(() => {
-        els.status.textContent = 'Ready';
-        els.status.style.color = '#666';
-    }, 3000);
-}
-
-// Arrancar
-document.addEventListener('DOMContentLoaded', init);
