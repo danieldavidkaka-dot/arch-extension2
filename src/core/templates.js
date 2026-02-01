@@ -1,5 +1,5 @@
 // src/core/templates.js
-console.log(">arch: Template Manager v16 (Full Heavy Arsenal)");
+console.log(">arch: Template Manager v17 (Live Variables Engine)");
 
 const DEFAULT_TEMPLATES = {
 
@@ -19,11 +19,12 @@ const DEFAULT_TEMPLATES = {
   "structure": { "root": [], "src": [] }
 }`,
 
-'DB_ARCHITECT': `> **[MODE: DB ARCHITECT - SUPABASE]**
+    'DB_ARCHITECT': `> **[MODE: DB ARCHITECT - SUPABASE]**
 > GOAL: Reverse-engineer a production-ready Database Schema from Frontend Code.
 > ROLE: Senior Database Architect (PostgreSQL/Supabase Expert).
 > INPUT_CONTEXT: "User will provide Frontend Code (Interfaces, Zod Schemas, Forms)."
 > TARGET: Supabase (PostgreSQL 15+).
+> DATABASE_ENGINE: {{VAR:Engine:PostgreSQL|MySQL|MongoDB}}
 > TASK:
 1. **Entity Extraction**: Analyze TypeScript interfaces/Zod schemas to define tables.
 2. **Normalization**: strict 3NF. Use UUIDv4 for all Primary Keys.
@@ -130,7 +131,7 @@ const DEFAULT_TEMPLATES = {
 > STACK: React + Tailwind + Lucide + Shadcn.
 > OUT: Single .tsx file. Accessibility First.`,
 
-'UI_REPLICA': `> **[MODE: UI REPLICA - PIXEL PERFECT]**
+    'UI_REPLICA': `> **[MODE: UI REPLICA - PIXEL PERFECT]**
 > GOAL: Convert the attached screenshot into executable code.
 > ROLE: Senior Frontend Engineer (Pixel-Perfect Specialist).
 > INPUT_CONTEXT: "User will attach a UI reference image (Stitch/Figma/Screenshot)."
@@ -190,7 +191,6 @@ const TemplateManager = {
             try {
                 chrome.storage.sync.get(['userTemplates'], (result) => {
                     const custom = result.userTemplates || {};
-                    // IMPORTANTE: Esto fusiona tus 16 defaults con cualquier cosa nueva que crees
                     resolve({ ...DEFAULT_TEMPLATES, ...custom });
                 });
             } catch (e) { resolve(DEFAULT_TEMPLATES); }
@@ -227,6 +227,34 @@ const TemplateManager = {
         });
     },
 
+    // --- NUEVA LÓGICA DE VARIABLES VIVAS (v9.0) ---
+
+    // 1. Detectar qué variables pide el prompt
+    parseVariables: (templateStr) => {
+        const regex = /{{VAR:(.*?)}}/g;
+        const matches = [...templateStr.matchAll(regex)];
+        
+        return matches.map(m => {
+            const parts = m[1].split(':'); 
+            return {
+                raw: m[0],                 
+                key: parts[0],             
+                options: parts[1] ? parts[1].split('|') : null 
+            };
+        });
+    },
+
+    // 2. Reemplazar las variables con lo que el usuario escribió
+    compileVariables: (templateStr, valuesMap) => {
+        let output = templateStr;
+        for (const [key, val] of Object.entries(valuesMap)) {
+            const regex = new RegExp(`{{VAR:${key}(:.*?)?}}`, 'g');
+            output = output.replace(regex, val);
+        }
+        return output;
+    },
+
+    // 3. Compilación final
     compile: (templateStr, inputUser) => {
         if (!inputUser) return templateStr;
         const safeInput = inputUser.replace(/"/g, '\\"');

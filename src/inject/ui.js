@@ -1,76 +1,166 @@
-// src/inject/ui.js - UI Module v8.0 (Synced Styles)
-console.log(">arch: UI Module Loaded");
+// src/inject/ui.js - UI Module v9.0 (Live Variables Form)
+console.log(">arch: UI Module Loaded v9.0");
 
 window.ArchUI = {
-    create: function(modes, onSelect) {
-        // 1. Limpieza preventiva (borrar si ya existe para no duplicar)
-        const existingOverlay = document.querySelector('.arch-modal-overlay');
-        const existingTrigger = document.querySelector('.arch-trigger');
-        if (existingOverlay) existingOverlay.remove();
-        if (existingTrigger) existingTrigger.remove();
+    overlay: null,
+    modal: null,
+    container: null, 
+    headerTitle: null,
+    
+    create: function(templates, onSelectCallback) {
+        this.cleanup();
 
-        // 2. Crear el BOTÓN FLOTANTE (Trigger)
-        const trigger = document.createElement('div');
-        trigger.className = 'arch-trigger';
-        trigger.textContent = '>_';
-        trigger.title = 'Open >arch Studio';
-        document.body.appendChild(trigger);
+        // 1. Estructura Base
+        this.overlay = document.createElement('div');
+        this.overlay.className = 'arch-modal-overlay';
+        this.overlay.style.display = 'none';
 
-        // 3. Crear la VENTANA MODAL (Oculta al inicio)
-        const overlay = document.createElement('div');
-        overlay.className = 'arch-modal-overlay';
-        overlay.style.display = 'none'; // CRUCIAL: Empieza invisible
-        
-        // Cerrar al hacer clic fuera
-        overlay.onclick = (e) => {
-            if (e.target === overlay) overlay.style.display = 'none';
-        };
+        this.modal = document.createElement('div');
+        this.modal.className = 'arch-modal';
 
-        const modal = document.createElement('div');
-        modal.className = 'arch-modal';
-
-        // 3.1 Cabecera del Modal
+        // 2. Header
         const header = document.createElement('div');
         header.className = 'arch-modal-header';
         
-        const title = document.createElement('span');
-        title.className = 'arch-title';
-        title.textContent = '>arch_console // v8.0';
+        this.headerTitle = document.createElement('span');
+        this.headerTitle.className = 'arch-title';
+        this.headerTitle.textContent = '>arch_console // v9.0';
         
         const closeBtn = document.createElement('button');
         closeBtn.className = 'arch-close-btn';
         closeBtn.innerHTML = '&times;';
-        closeBtn.onclick = () => overlay.style.display = 'none';
+        closeBtn.onclick = () => this.close();
 
-        header.appendChild(title);
+        header.appendChild(this.headerTitle);
         header.appendChild(closeBtn);
 
-        // 3.2 Rejilla de Botones (Grid)
-        const grid = document.createElement('div');
-        grid.className = 'arch-grid';
+        // 3. Contenedor Dinámico (Grid o Form)
+        this.container = document.createElement('div');
+        this.renderGrid(templates, onSelectCallback);
 
-        modes.forEach(modeKey => {
+        this.modal.appendChild(header);
+        this.modal.appendChild(this.container);
+        this.overlay.appendChild(this.modal);
+        document.body.appendChild(this.overlay);
+
+        // 4. Trigger Button
+        const trigger = document.createElement('div');
+        trigger.className = 'arch-trigger';
+        trigger.textContent = '>_';
+        trigger.onclick = () => {
+            this.overlay.style.display = 'flex';
+            this.renderGrid(templates, onSelectCallback);
+        };
+        document.body.appendChild(trigger);
+    },
+
+    // Pinta la rejilla de botones original
+    renderGrid: function(templates, onSelect) {
+        this.container.innerHTML = '';
+        this.container.className = 'arch-grid';
+        this.headerTitle.textContent = '>arch_console // Select Mode';
+
+        Object.entries(templates).forEach(([key, templateContent]) => {
             const btn = document.createElement('div');
             btn.className = 'arch-btn';
-            btn.textContent = modeKey;
+            btn.textContent = key;
             
             btn.onclick = () => {
-                onSelect(modeKey);
-                overlay.style.display = 'none'; // Cerrar al seleccionar
+                const vars = window.TemplateManager.parseVariables(templateContent);
+                
+                if (vars.length > 0) {
+                    this.renderForm(key, templateContent, vars, onSelect);
+                } else {
+                    onSelect(templateContent); 
+                    this.close();
+                }
             };
-            
-            grid.appendChild(btn);
+            this.container.appendChild(btn);
+        });
+    },
+
+    // Pinta el formulario de variables
+    renderForm: function(modeKey, templateContent, variables, onSelect) {
+        this.container.innerHTML = '';
+        this.container.className = 'arch-form-container';
+        this.headerTitle.textContent = `>_ CONFIG: ${modeKey}`;
+
+        const inputsMap = {}; 
+
+        variables.forEach(v => {
+            const group = document.createElement('div');
+            group.className = 'arch-form-group';
+
+            const label = document.createElement('label');
+            label.className = 'arch-label';
+            label.textContent = v.key;
+
+            let inputEl;
+
+            if (v.options) {
+                inputEl = document.createElement('select');
+                inputEl.className = 'arch-select';
+                v.options.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt;
+                    option.textContent = opt;
+                    inputEl.appendChild(option);
+                });
+            } else {
+                inputEl = document.createElement('input');
+                inputEl.type = 'text';
+                inputEl.className = 'arch-input';
+                inputEl.placeholder = `Enter ${v.key}...`;
+                if (Object.keys(inputsMap).length === 0) setTimeout(() => inputEl.focus(), 100);
+            }
+
+            inputsMap[v.key] = inputEl;
+            group.appendChild(label);
+            group.appendChild(inputEl);
+            this.container.appendChild(group);
         });
 
-        // Ensamblaje final
-        modal.appendChild(header);
-        modal.appendChild(grid);
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
+        const actions = document.createElement('div');
+        actions.className = 'arch-form-actions';
 
-        // 4. EVENTO: Abrir modal al hacer clic en el botón flotante
-        trigger.onclick = () => {
-            overlay.style.display = 'flex'; // Mostrar centrado
+        const backBtn = document.createElement('button');
+        backBtn.className = 'arch-btn-back';
+        backBtn.textContent = '<< BACK';
+        backBtn.onclick = () => {
+            window.TemplateManager.getAll().then(tpls => this.renderGrid(tpls, onSelect));
         };
+
+        const runBtn = document.createElement('button');
+        runBtn.className = 'arch-btn-run';
+        runBtn.textContent = 'RUN >>';
+        runBtn.onclick = () => {
+            const values = {};
+            for (const [key, el] of Object.entries(inputsMap)) {
+                values[key] = el.value;
+            }
+
+            const filledTemplate = window.TemplateManager.compileVariables(templateContent, values);
+            onSelect(filledTemplate);
+            this.close();
+        };
+        
+        this.container.onkeydown = (e) => {
+            if(e.key === 'Enter') runBtn.click();
+        };
+
+        actions.appendChild(backBtn);
+        actions.appendChild(runBtn);
+        this.container.appendChild(actions);
+    },
+
+    close: function() {
+        if (this.overlay) this.overlay.style.display = 'none';
+    },
+
+    cleanup: function() {
+        const existOv = document.querySelector('.arch-modal-overlay');
+        const existTr = document.querySelector('.arch-trigger');
+        if (existOv) existOv.remove();
+        if (existTr) existTr.remove();
     }
 };

@@ -1,4 +1,4 @@
-/* assets/styles.css - >arch v8.0 Official Styles */
+/* assets/styles.css - >arch v9.0 Official Styles */
 
 :root {
   --arch-neon: #00ff9d;
@@ -7,9 +7,7 @@
   --arch-dim: rgba(0, 255, 157, 0.1);
 }
 
-/* ==========================================================================
-   1. BOTÓN FLOTANTE PRINCIPAL (Trigger)
-   ========================================================================== */
+/* 1. BOTÓN FLOTANTE PRINCIPAL */
 .arch-trigger {
   position: fixed;
   bottom: 20px;
@@ -19,16 +17,12 @@
   background-color: #000;
   color: var(--arch-neon);
   border: 1px solid var(--arch-neon);
-  border-radius: 50%; /* Círculo perfecto */
+  border-radius: 50%;
   font-family: 'Courier New', monospace;
   font-size: 20px;
   font-weight: bold;
   cursor: pointer;
-  
-  /* CRÍTICO: El z-index más alto permitido por el navegador */
   z-index: 2147483647 !important;
-  
-  /* Efectos Visuales */
   box-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
@@ -48,18 +42,16 @@
   transform: scale(0.95);
 }
 
-/* ==========================================================================
-   2. VENTANA MODAL (El Menú de Comandos)
-   ========================================================================== */
+/* 2. VENTANA MODAL */
 .arch-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.7); /* Fondo oscuro semitransparente */
-  backdrop-filter: blur(2px); /* Pequeño desenfoque del fondo */
-  z-index: 2147483647 !important; /* Igual de alto que el trigger */
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(2px);
+  z-index: 2147483647 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -109,12 +101,12 @@
 .arch-grid {
   padding: 16px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* Grid responsivo */
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 10px;
-  overflow-y: auto; /* Scroll si hay muchos botones */
+  overflow-y: auto;
 }
 
-/* Botones dentro del Modal */
+/* Botones del Grid */
 .arch-btn {
   background: #111;
   border: 1px solid #333;
@@ -135,13 +127,11 @@
   transform: translateY(-2px);
 }
 
-/* ==========================================================================
-   3. SNATCHER (Botón de Descarga Contexto)
-   ========================================================================== */
+/* 3. SNATCHER */
 .arch-snatcher-btn {
   position: fixed;
-  top: 15px; /* Arriba a la derecha */
-  right: 70px; /* Un poco separado de los botones nativos */
+  top: 15px;
+  right: 70px;
   background: #111;
   color: #fff;
   border: 1px solid #444;
@@ -161,15 +151,12 @@
   color: var(--arch-neon);
 }
 
-/* ==========================================================================
-   4. ANIMACIONES
-   ========================================================================== */
+/* 4. ANIMACIONES */
 @keyframes archFadeIn {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
 }
 
-/* Scrollbar personalizado estilo Hacker */
 .arch-grid::-webkit-scrollbar {
   width: 6px;
 }
@@ -183,3 +170,76 @@
 .arch-grid::-webkit-scrollbar-thumb:hover {
   background: var(--arch-neon);
 }
+
+/* ==========================================================================
+   5. FORMULARIO DE VARIABLES VIVAS (NUEVO v9.0)
+   ========================================================================== */
+.arch-form-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.arch-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.arch-label {
+  color: var(--arch-neon);
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.arch-input, .arch-select {
+  background: #000;
+  border: 1px solid #333;
+  color: #fff;
+  padding: 8px;
+  border-radius: 4px;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.arch-input:focus, .arch-select:focus {
+  border-color: var(--arch-neon);
+}
+
+.arch-form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.arch-btn-run {
+  background: var(--arch-neon);
+  color: #000;
+  border: none;
+  font-weight: bold;
+  flex: 2;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+}
+.arch-btn-run:hover { opacity: 0.9; }
+
+.arch-btn-back {
+  background: #222;
+  color: #ccc;
+  border: 1px solid #444;
+  flex: 1;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+}
+.arch-btn-back:hover { border-color: #666; }
