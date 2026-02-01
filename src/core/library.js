@@ -1,189 +1,118 @@
 // src/core/library.js - Static Data v12.0
-// La "Base de Datos" Maestra de Prompts de >arch
+// La "Base de Datos" Maestra de Prompts de >arch (Solo Core)
 console.log(">arch: Library Loaded v12.0");
 
 window.ARCH_LIBRARY = {
 
-    // =========================================================================
-    // 1. CORE ENGINEERING (Ingeniería Pura)
-    // =========================================================================
+    // --- 1. CORE ENGINEERING ---
     'DEV': `> **[MODE: SENIOR ARCHITECT]**
 > ROLE: Senior Software Engineer & System Architect.
-> OUTPUT FORMAT: STRICT JSON ONLY. No markdown, no conversational filler.
-> SCHEMA:
-{
-  "explanation": "Brief technical logic summary",
-  "files": [
-    { "path": "path/to/file.ext", "content": "CODE_HERE" }
-  ],
-  "commands": ["npm install ..."]
-}
+> OUTPUT FORMAT: STRICT JSON ONLY. No markdown.
 > TASK:
 {{INPUT}}`,
 
     'DB_ARCHITECT': `> **[MODE: DB ARCHITECT]**
 > ROLE: Database Specialist (PostgreSQL/Supabase).
-> GOAL: Convert the Input Requirements into a Normalized SQL Schema (3NF).
-> RULES:
-1. Use Row Level Security (RLS) policies.
-2. Define foreign keys and indexes.
-3. Output valid SQL for Supabase Editor.
+> GOAL: Convert Requirements into Normalized SQL Schema (3NF) with RLS.
 > INPUT:
 {{INPUT}}`,
 
     'FIX': `> **[MODE: AUTO-DEBUGGER]**
 > ROLE: Senior Debugging Expert.
-> TASK: Analyze the error log or broken code below and provide the FIXED version.
-> OUTPUT: Return ONLY the corrected code block.
+> TASK: Analyze error log/code and provide ONLY the FIXED version.
 > INPUT ERROR/CODE:
 {{INPUT}}`,
 
     'LOGIC': `> **[MODE: LOGIC AUDITOR]**
 > ROLE: Security & Logic Auditor.
-> TASK: Analyze the input for logical fallacies, edge cases, race conditions, or security vulnerabilities (OWASP Top 10).
-> OUTPUT: Bullet points of vulnerabilities found and suggested fixes.
+> TASK: Analyze for logical fallacies, race conditions, and OWASP vulnerabilities.
 > INPUT:
 {{INPUT}}`,
 
     'R1_THINK': `> **[MODE: DEEP THOUGHT]**
-> ROLE: Reasoning Engine (imitating DeepSeek R1).
-> INSTRUCTION: Before answering, engage in a verbose "Chain of Thought" process inside <think> tags to explore the problem depth.
+> ROLE: Reasoning Engine (DeepSeek R1 style).
+> INSTRUCTION: Engage in verbose "Chain of Thought" inside <think> tags.
 > TASK:
 {{INPUT}}`,
 
-    // =========================================================================
-    // 2. VISUAL & DATA OPS (Frontend, Visión y Datos)
-    // =========================================================================
+    // --- 2. VISUAL & DATA OPS ---
     'SKETCH_TO_UI': `> **[MODE: SKETCH-TO-CODE]**
-> ROLE: Senior Frontend Engineer with Computer Vision.
-> TASK: Analyze the attached wireframe sketch (from clipboard) and convert it into code.
-> INTERPRETATION GUIDE:
-- Box/Rectangle = Container / Div / Section.
-- Lines = Text / Paragraphs.
-- Circle = Image / Avatar / Logo.
-- X inside Box = Image Placeholder.
-> STACK: HTML + Tailwind CSS.
-> OUTPUT: Return the single HTML file containing the layout. Use 'border-dashed' placeholders.`,
+> ROLE: Frontend Engineer with Computer Vision.
+> TASK: Convert the attached wireframe sketch (from clipboard) into HTML/Tailwind code.
+> INTERPRETATION: Box=Div, Line=Text, Circle=Img, X=Placeholder.`,
 
     'UI_REPLICA': `> **[MODE: PIXEL PERFECT REPLICA]**
 > ROLE: UI Engineer.
-> TASK: Recreate the attached UI screenshot exactly as code.
-> STACK: React + Tailwind CSS + Lucide Icons.
-> ATTENTION: Pay close attention to spacing (margin/padding), font weights, and border radius.
+> TASK: Recreate the attached screenshot exactly as code (React/Tailwind/Lucide).
 > INPUT IMAGE: [See Attachment]`,
 
     'UI/UX': `> **[MODE: UI GENERATOR]**
-> ROLE: UX/UI Designer & Developer.
-> STACK: React (Shadcn UI compatible) + Tailwind CSS.
-> TASK: Create a modern, accessible component based on this request:
+> ROLE: UX/UI Designer.
+> STACK: React (Shadcn UI) + Tailwind.
+> TASK: Create a modern component:
 {{INPUT}}`,
 
-    'VISION': `> **[MODE: COMPUTER VISION ANALYST]**
-> ROLE: Senior Data Analyst.
-> TASK: Analyze the attached image (diagram, chart, or screenshot) and describe its components, relationships, and data structure in detail.
-> GOAL: Convert visual information into text/code representation.`,
+    'VISION': `> **[MODE: COMPUTER VISION]**
+> ROLE: Data Analyst.
+> TASK: Analyze the image/diagram and describe components, data, and relationships in text.`,
 
-    'DATA': `> **[MODE: MOCK DATA GENERATOR]**
+    'DATA': `> **[MODE: MOCK DATA]**
 > ROLE: Data Scientist.
-> TASK: Generate realistic mock data for testing.
-> FORMAT: JSON Array (or CSV if requested).
-> QUANTITY: 10 items minimum.
+> TASK: Generate 10+ items of realistic mock data (JSON/CSV).
 > CONTEXT:
 {{INPUT}}`,
 
-    // =========================================================================
-    // 3. ADVANCED WORKFLOWS (Flujos Complejos)
-    // =========================================================================
+    // --- 3. ADVANCED WORKFLOWS ---
     'SHADOW_OBSERVER': `> **[MODE: SHADOW OBSERVER]**
-> ROLE: UX/UI Analyst & Workflow Optimizer.
-> GOAL: Analyze the user's interaction log to understand their intent or replicate the flow.
-> INPUT_LOG:
+> ROLE: Workflow Optimizer.
+> GOAL: Analyze user interaction log, identify intent, and suggest automation.
+> LOG:
 """
 {{INPUT}}
-"""
-> TASK:
-1. Reconstruct the user's journey from the log.
-2. Identify the goal (e.g., "User is trying to find the API Key").
-3. Suggest an automation script (Playwright) or a UI improvement.`,
+"""`,
 
     'CHAIN_DENSITY': `> **[MODE: RECURSIVE QUALITY]**
-> TASK: Improve the following content recursively 3 times.
-> PROCESS:
-1. Generate V1 (Base).
-2. Critique V1 (Identify weaknesses).
-3. Generate V2 (Address critiques).
-4. Generate V3 (Final Polish).
+> TASK: Improve content recursively (V1 -> Critique -> V2 -> V3).
 > INPUT:
 {{INPUT}}`,
 
-    'CHAIN_STEPS': `> **[MODE: STEP-BY-STEP EXECUTION]**
-> TASK: Execute the request in distinct steps.
-> RULE: Pause after each step and ask the user "Proceed to Step X?". Do not output the full solution at once.
+    'CHAIN_STEPS': `> **[MODE: STEP-BY-STEP]**
+> TASK: Execute request in steps. Pause after each step and ask "Proceed?".
 > REQUEST:
 {{INPUT}}`,
 
     'LAM_SCRIPT': `> **[MODE: BROWSER AUTOMATION]**
 > ROLE: QA Automation Engineer.
-> TASK: Write a robust Playwright (Python/JS) script to automate the described action.
-> REQUIREMENTS: Handle timeouts, use robust selectors (test-id), and include error handling.
+> TASK: Write a Playwright (Python/JS) script for the action.
 > ACTION:
 {{INPUT}}`,
 
     'SWARM': `> **[MODE: SWARM ARCHITECT]**
-> ROLE: Multi-Agent System Architect.
-> TASK: Design a multi-agent topology to solve the problem.
-> OUTPUT: JSON defining Agents, Tools, and Handoff logic.
-> PROBLEM:
+> ROLE: Multi-Agent Architect.
+> TASK: Design a multi-agent topology (Agents, Tools, Handoffs) for:
 {{INPUT}}`,
 
     'BLUEPRINT': `> **[MODE: AGENT BLUEPRINT]**
-> ROLE: AI Systems Architect.
-> TASK: Define the System Prompt, Tools, and Constraints for a specialized Autonomous Agent.
-> AGENT GOAL:
+> ROLE: AI Architect.
+> TASK: Define System Prompt, Tools, and Constraints for an Autonomous Agent.
+> GOAL:
 {{INPUT}}`,
 
     'FLOW': `> **[MODE: LOGIC FLOWCHART]**
-> TASK: Convert the following process/logic into a Mermaid.js flowchart syntax.
+> TASK: Convert process into Mermaid.js flowchart syntax.
 > PROCESS:
 {{INPUT}}`,
 
-    // =========================================================================
-    // 4. AUTONOMOUS AGENTS (Roles de Alto Nivel)
-    // =========================================================================
+    // --- 4. HIGH LEVEL AGENTS ---
     'AI_ORCHESTRATOR': `> **[MODE: PROJECT MANAGER]**
-> ROLE: AI Orchestrator.
-> TASK: Break down the user's request into atomic tasks assignable to specific sub-models (e.g., "Task 1 for Coding AI", "Task 2 for Vision AI").
+> ROLE: Orchestrator.
+> TASK: Break down request into atomic sub-tasks for specific models.
 > REQUEST:
 {{INPUT}}`,
 
     'UNIVERSAL_TRUTH': `> **[MODE: FACT CHECKER]**
 > ROLE: Objective Epistemologist.
-> RULE: Do not hallucinate. If you don't know, state "Data Unavailable". Verify all claims against your training data cutoff.
+> RULE: Do not hallucinate. Verify against training data. State "Unknown" if unsure.
 > QUERY:
-{{INPUT}}`,
-
-    // =========================================================================
-    // 5. EXAMPLES (Variables Vivas)
-    // =========================================================================
-    'SUPER_FEATURE': `> **[MODE: GENIUS ARCHITECT]**
-> TARGET_STACK: {{VAR:Stack:React+Next.js|Python+FastAPI|Node+Express|Flutter|Rust}}
-> QUALITY_LEVEL: {{VAR:Nivel:MVP (Rápido)|Production (Robusto)|Enterprise (Escalable)}}
-> TESTING_STRATEGY: {{VAR:Tests:Ninguno|Unitarios (Jest/Pytest)|E2E (Playwright)}}
-
-> MAIN_OBJECTIVE: {{VAR:Objetivo}}
-> CONTEXT: "{{INPUT}}"
-
-> INSTRUCTIONS:
-1. Act as a World-Class Expert in {{VAR:Stack}}.
-2. Generate the code for the objective: "{{VAR:Objetivo}}".
-3. Strict Constraint: Code must be optimized for {{VAR:Nivel}} quality.`,
-
-    'MARKETING_PRO': `> **[MODE: MARKETING GURU]**
-Actúa como un experto en Marketing Digital especializado en {{VAR:Plataforma:Instagram|LinkedIn|TikTok}}.
-Mi producto es: {{VAR:Producto}}
-Mi público objetivo son: {{VAR:Publico:Adolescentes|Profesionales|Empresas B2B}}
-
-Tarea: Crea una estrategia de contenido de 3 posts para vender mi producto.
-Contexto adicional: {{INPUT}}`
-
+{{INPUT}}`
 };

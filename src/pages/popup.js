@@ -1,4 +1,4 @@
-// src/pages/popup.js - v12.0 Master Guide
+// src/pages/popup.js - v12.0 Master Guide (Clean)
 console.log(">arch: Popup Logic Loaded");
 
 const GUIDE_DATA = [
@@ -143,24 +143,8 @@ const GUIDE_DATA = [
                 type: "flow" 
             }
         ]
-    },
-
-    // --- SECCIÓN 5: EJEMPLOS ---
-    {
-        title: "🚀 Examples (Variables Vivas)",
-        items: [
-            { 
-                name: "SUPER_FEATURE", 
-                desc: "Demo: Selector de Stack Tecnológico y Nivel.", 
-                type: "flow" 
-            },
-            { 
-                name: "MARKETING_PRO", 
-                desc: "Demo: Estrategia de contenidos con variables.", 
-                type: "flow" 
-            }
-        ]
     }
+    // NOTA: Se eliminó la Sección 5 "Examples" para mantener consistencia con library.js
 ];
 
 // =============================================================================
@@ -169,7 +153,7 @@ const GUIDE_DATA = [
 document.addEventListener('DOMContentLoaded', () => {
     
     const container = document.getElementById('guide-container');
-    if (!container) return; // Evitar errores si el HTML no está listo
+    if (!container) return; 
     
     GUIDE_DATA.forEach(section => {
         // Título
