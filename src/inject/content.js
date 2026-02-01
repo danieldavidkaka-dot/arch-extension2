@@ -109,17 +109,23 @@ document.addEventListener('keydown', async (e) => {
 // =============================================================================
 // 3. AUTO-INICIO (¡IMPORTANTE!)
 // =============================================================================
-// Esto asegura que el botón flotante aparezca apenas carga la página
 (async function init() {
     try {
-        // Esperamos un momento para asegurar que el DOM esté listo y engine.js cargado
+        // Esperamos un momento para asegurar que el DOM esté listo
         setTimeout(async () => {
+            // 1. Iniciar UI Flotante
             if (window.TemplateManager && window.ArchUI) {
                 const templates = await window.TemplateManager.getAll();
-                // Creamos la UI (Botón visible + Modal oculto)
                 window.ArchUI.create(templates, handleSelection);
                 console.log(">arch: Floating UI Initialized");
             }
+
+            // 2. Iniciar Snatcher (El botón de descarga) <-- ¡ESTO FALTABA!
+            if (window.ArchSnatcher) {
+                window.ArchSnatcher.init();
+                console.log(">arch: Snatcher Module Active");
+            }
+            
         }, 500);
     } catch (e) {
         console.error(">arch: Initialization failed", e);

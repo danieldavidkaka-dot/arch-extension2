@@ -1,4 +1,4 @@
-/* assets/styles/modules.css - Advanced Features v12.0 */
+/* assets/styles/modules.css - Advanced Features v13.0 */
 
 /* ==========================================================================
    1. MÓDULO: FORMULARIOS (Variables Vivas)
@@ -167,4 +167,42 @@ canvas.arch-canvas-board {
   0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7); }
   70% { box-shadow: 0 0 0 10px rgba(255, 68, 68, 0); }
   100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
+}
+
+/* ==========================================================================
+   4. MÓDULO: SNATCHER (Botón de Descarga)
+   ========================================================================== */
+.arch-snatch-btn {
+  position: absolute;
+  top: 10px;
+  right: 60px; /* Lo ponemos a la izquierda del botón "Copy" nativo */
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid #333;
+  color: #888;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.arch-snatch-btn:hover {
+  border-color: var(--arch-neon);
+  color: var(--arch-neon);
+  background: rgba(0, 255, 157, 0.1);
+}
+
+.arch-snatch-btn span {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.arch-snatch-btn.success {
+  border-color: #00ff9d;
+  color: #00ff9d;
 }
