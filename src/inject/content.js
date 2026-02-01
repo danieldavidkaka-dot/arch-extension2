@@ -20,16 +20,18 @@ window.ShadowRecorder = {
             const el = e.target;
             const id = el.id ? `#${el.id}` : '';
             const cls = el.className ? `.${el.className.split(' ').join('.')}` : '';
-            const text = el.innerText ? `"${el.innerText.substring(0, 20)}..."` : '';
+            // Capturar texto corto para contexto
+            const text = el.innerText ? `"${el.innerText.substring(0, 20).replace(/\n/g, ' ')}..."` : '';
             this.record(`[CLICK] ${el.tagName}${id}${cls} ${text}`);
         };
 
         this.listeners.input = (e) => {
+            // No grabamos contraseñas por seguridad
+            if (e.target.type === 'password') return;
             this.record(`[TYPE] ${e.target.tagName} => "${e.target.value}"`);
         };
 
         this.listeners.scroll = () => {
-            // Debounce simple para no saturar el log
             if (!this.scrolling) {
                 this.record(`[SCROLL] User scrolled the page`);
                 this.scrolling = true;
@@ -48,7 +50,6 @@ window.ShadowRecorder = {
         this.isRecording = false;
         console.log(">arch: ⏹️ Shadow Recorder STOPPED");
 
-        // Remover listeners
         document.removeEventListener('click', this.listeners.click, true);
         document.removeEventListener('input', this.listeners.input, true);
         document.removeEventListener('scroll', this.listeners.scroll, true);
@@ -67,46 +68,60 @@ window.ShadowRecorder = {
 // =============================================================================
 let lastKeyTime = 0;
 
-document.addEventListener('keydown', async (e) => {
-    // ACTIVADOR: Shift + > (Mayor que)
-    // Nota: En teclados latinos '>' suele ser Shift + <.
-    // Verificamos si la tecla es '>' o si presionan Shift + alguna tecla que da '>'
-    
-    // Check simple para ">"
-    if (e.key === '>') {
-        // Prevenir doble disparo rápido
-        const now = Date.now();
-        if (now - lastKeyTime < 500) return;
-        lastKeyTime = now;
-
-        e.preventDefault(); // Evitar que escriba ">" en la web
-
-        // 1. Obtener Templates del Nuevo Cerebro
-        const templates = await window.TemplateManager.getAll();
-
-        // 2. Iniciar UI
-        window.ArchUI.create(templates, (selectedPrompt) => {
-            // Callback cuando el usuario elige un prompt
-            copyToClipboard(selectedPrompt);
-        });
-    }
-});
-
-// Función auxiliar de copiado
-function copyToClipboard(text) {
+// Función central para copiar al portapapeles
+function handleSelection(text) {
     navigator.clipboard.writeText(text).then(() => {
-        console.log(">arch: Prompt copied to clipboard!");
+        console.log(">arch: Prompt copied!");
         
-        // Feedback visual sutil (Toast)
+        // Feedback visual (Toast)
         const toast = document.createElement('div');
         toast.textContent = "COPIED TO CLIPBOARD!";
         Object.assign(toast.style, {
             position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
             background: '#00ff9d', color: '#000', padding: '10px 20px',
-            borderRadius: '4px', fontWeight: 'bold', zIndex: '999999',
-            fontFamily: 'Courier New'
+            borderRadius: '4px', fontWeight: 'bold', zIndex: '2147483647',
+            fontFamily: 'Courier New', boxShadow: '0 0 10px rgba(0,0,0,0.5)'
         });
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 2000);
     });
 }
+
+// Listener de Teclado (Shift + >)
+document.addEventListener('keydown', async (e) => {
+    if (e.key === '>') {
+        const now = Date.now();
+        if (now - lastKeyTime < 500) return; // Debounce
+        lastKeyTime = now;
+
+        // Si el UI ya existe, solo lo mostramos, si no, lo recreamos (seguridad)
+        if (window.ArchUI && window.ArchUI.overlay) {
+             window.ArchUI.overlay.style.display = 'flex';
+        } else {
+             // Fallback por si acaso
+             const templates = await window.TemplateManager.getAll();
+             window.ArchUI.create(templates, handleSelection);
+             window.ArchUI.overlay.style.display = 'flex';
+        }
+    }
+});
+
+// =============================================================================
+// 3. AUTO-INICIO (¡IMPORTANTE!)
+// =============================================================================
+// Esto asegura que el botón flotante aparezca apenas carga la página
+(async function init() {
+    try {
+        // Esperamos un momento para asegurar que el DOM esté listo y engine.js cargado
+        setTimeout(async () => {
+            if (window.TemplateManager && window.ArchUI) {
+                const templates = await window.TemplateManager.getAll();
+                // Creamos la UI (Botón visible + Modal oculto)
+                window.ArchUI.create(templates, handleSelection);
+                console.log(">arch: Floating UI Initialized");
+            }
+        }, 500);
+    } catch (e) {
+        console.error(">arch: Initialization failed", e);
+    }
+})();
