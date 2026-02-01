@@ -1,23 +1,23 @@
 {
   "manifest_version": 3,
-  "name": ">arch // AI Architect",
-  "version": "8.0",
-  "description": "Suite de Orquestación Creativa y Soporte Técnico para IA.",
+  "name": ">arch extension",
+  "version": "12.0",
+  "description": "The AI Architecture Console. Press >_ to inject engineering prompts.",
   "permissions": [
-    "storage"
+    "storage",
+    "activeTab",
+    "scripting",
+    "clipboardWrite"
   ],
   "host_permissions": [
     "https://chatgpt.com/*",
     "https://claude.ai/*",
     "https://gemini.google.com/*",
-    "https://chat.deepseek.com/*",
-    "https://manus.im/*",
-    "https://bolt.new/*",
-    "https://lovable.dev/*",
-    "https://grok.com/*",
-    "https://v0.app//*",
-    "https://www.perplexity.ai/*"
+    "https://chat.deepseek.com/*"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "src/pages/popup.html",
     "default_icon": {
@@ -26,39 +26,37 @@
       "128": "assets/icons/icon128.png"
     }
   },
-  "icons": {
-    "16": "assets/icons/icon16.png",
-    "48": "assets/icons/icon48.png",
-    "128": "assets/icons/icon128.png"
-  },
+  "options_page": "src/pages/options.html",
   "content_scripts": [
     {
       "matches": [
         "https://chatgpt.com/*",
         "https://claude.ai/*",
         "https://gemini.google.com/*",
-        "https://chat.deepseek.com/*",
-        "https://manus.im/*",
-        "https://bolt.new/*",
-        "https://lovable.dev/*",
-        "https://grok.com/*",
-        "https://v0.app/*",
-        "https://www.perplexity.ai/*"
-      ],
-      "js": [
-        "src/core/templates.js",
-        "src/inject/ui.js",
-        "src/inject/snatcher.js",
-        "src/inject/content.js"
+        "https://chat.deepseek.com/*"
       ],
       "css": [
-        "assets/styles.css"
+        "assets/styles/core.css",     
+        "assets/styles/modules.css"   
       ],
-      "run_at": "document_idle"
+      "js": [
+        "src/core/library.js",       
+        "src/core/engine.js",        
+        "src/inject/ui.js",
+        "src/inject/content.js"
+      ],
+      "run_at": "document_end"
     }
   ],
-  "options_ui": {
-    "page": "src/pages/options.html",
-    "open_in_tab": true
-  }
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/styles/core.css", "assets/styles/modules.css"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

@@ -1,13 +1,16 @@
-/* assets/styles.css - >arch v9.0 Official Styles */
+/* assets/styles/core.css - Base Styles v12.0 */
 
 :root {
   --arch-neon: #00ff9d;
   --arch-bg: #0a0a0a;
   --arch-panel: #111111;
   --arch-dim: rgba(0, 255, 157, 0.1);
+  --arch-error: #ff4444;
 }
 
-/* 1. BOTÓN FLOTANTE PRINCIPAL */
+/* ==========================================================================
+   1. BOTÓN FLOTANTE PRINCIPAL
+   ========================================================================== */
 .arch-trigger {
   position: fixed;
   bottom: 20px;
@@ -42,7 +45,9 @@
   transform: scale(0.95);
 }
 
-/* 2. VENTANA MODAL */
+/* ==========================================================================
+   2. VENTANA MODAL (Overlay y Contenedor)
+   ========================================================================== */
 .arch-modal-overlay {
   position: fixed;
   top: 0;
@@ -98,6 +103,9 @@
 }
 .arch-close-btn:hover { color: #fff; }
 
+/* ==========================================================================
+   3. GRID SYSTEM (Selector de Modos)
+   ========================================================================== */
 .arch-grid {
   padding: 16px;
   display: grid;
@@ -106,7 +114,6 @@
   overflow-y: auto;
 }
 
-/* Botones del Grid */
 .arch-btn {
   background: #111;
   border: 1px solid #333;
@@ -127,7 +134,24 @@
   transform: translateY(-2px);
 }
 
-/* 3. SNATCHER */
+/* Scrollbar Hacker Style */
+.arch-grid::-webkit-scrollbar {
+  width: 6px;
+}
+.arch-grid::-webkit-scrollbar-track {
+  background: #000;
+}
+.arch-grid::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+.arch-grid::-webkit-scrollbar-thumb:hover {
+  background: var(--arch-neon);
+}
+
+/* ==========================================================================
+   4. SNATCHER (Botón de Descarga)
+   ========================================================================== */
 .arch-snatcher-btn {
   position: fixed;
   top: 15px;
@@ -151,155 +175,7 @@
   color: var(--arch-neon);
 }
 
-/* 4. ANIMACIONES */
 @keyframes archFadeIn {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
 }
-
-.arch-grid::-webkit-scrollbar {
-  width: 6px;
-}
-.arch-grid::-webkit-scrollbar-track {
-  background: #000;
-}
-.arch-grid::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 3px;
-}
-.arch-grid::-webkit-scrollbar-thumb:hover {
-  background: var(--arch-neon);
-}
-
-/* ==========================================================================
-   5. FORMULARIO DE VARIABLES VIVAS (NUEVO v9.0)
-   ========================================================================== */
-.arch-form-container {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow-y: auto;
-  max-height: 60vh;
-}
-
-.arch-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.arch-label {
-  color: var(--arch-neon);
-  font-family: 'Courier New', monospace;
-  font-size: 11px;
-  font-weight: bold;
-  text-transform: uppercase;
-}
-
-.arch-input, .arch-select {
-  background: #000;
-  border: 1px solid #333;
-  color: #fff;
-  padding: 8px;
-  border-radius: 4px;
-  font-family: 'Segoe UI', sans-serif;
-  font-size: 13px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.arch-input:focus, .arch-select:focus {
-  border-color: var(--arch-neon);
-}
-
-.arch-form-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.arch-btn-run {
-  background: var(--arch-neon);
-  color: #000;
-  border: none;
-  font-weight: bold;
-  flex: 2;
-  padding: 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: 'Courier New', monospace;
-}
-.arch-btn-run:hover { opacity: 0.9; }
-
-.arch-btn-back {
-  background: #222;
-  color: #ccc;
-  border: 1px solid #444;
-  flex: 1;
-  padding: 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: 'Courier New', monospace;
-}
-.arch-btn-back:hover { border-color: #666; }
-
-/* ==========================================================================
-   6. ARCH CANVAS (PIZARRA SEMÁNTICA)
-   ========================================================================== */
-.arch-canvas-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  background: #000;
-}
-
-canvas.arch-canvas-board {
-  background: #111;
-  border: 1px solid #333;
-  border-radius: 4px;
-  cursor: crosshair;
-  box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-  touch-action: none; /* Prevenir scroll al dibujar en táctil */
-}
-
-.arch-canvas-toolbar {
-  display: flex;
-  gap: 8px;
-  width: 100%;
-}
-
-.arch-tool-btn {
-  background: #222;
-  border: 1px solid #444;
-  color: #888;
-  padding: 8px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-family: 'Courier New', monospace;
-  font-size: 11px;
-  flex: 1;
-  transition: all 0.2s;
-}
-
-.arch-tool-btn:hover {
-  background: #333;
-  color: #fff;
-}
-
-.arch-tool-btn.active {
-  background: #222;
-  border-color: var(--arch-neon);
-  color: var(--arch-neon);
-}
-
-.arch-btn-gen {
-  background: var(--arch-neon);
-  color: #000;
-  font-weight: bold;
-  flex: 2;
-  border: none;
-}
-.arch-btn-gen:hover { opacity: 0.9; box-shadow: 0 0 10px var(--arch-dim); }

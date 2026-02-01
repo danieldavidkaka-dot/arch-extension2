@@ -1,5 +1,5 @@
-// src/inject/ui.js - UI Module v10.0 (Canvas Engine)
-console.log(">arch: UI Module Loaded v10.0");
+// src/inject/ui.js - UI Module v11.0 (Grid + Vars + Canvas + Shadow)
+console.log(">arch: UI Module Loaded v11.0");
 
 window.ArchUI = {
     overlay: null,
@@ -10,7 +10,7 @@ window.ArchUI = {
     create: function(templates, onSelectCallback) {
         this.cleanup();
 
-        // 1. Estructura Base
+        // 1. Estructura Base (Overlay + Modal)
         this.overlay = document.createElement('div');
         this.overlay.className = 'arch-modal-overlay';
         this.overlay.style.display = 'none';
@@ -24,7 +24,7 @@ window.ArchUI = {
         
         this.headerTitle = document.createElement('span');
         this.headerTitle.className = 'arch-title';
-        this.headerTitle.textContent = '>arch_console // v10.0';
+        this.headerTitle.textContent = '>arch_console // v11.0';
         
         const closeBtn = document.createElement('button');
         closeBtn.className = 'arch-close-btn';
@@ -36,6 +36,7 @@ window.ArchUI = {
 
         // 3. Contenedor Dinámico
         this.container = document.createElement('div');
+        // Renderizamos el Grid inicial
         this.renderGrid(templates, onSelectCallback);
 
         this.modal.appendChild(header);
@@ -43,7 +44,7 @@ window.ArchUI = {
         this.overlay.appendChild(this.modal);
         document.body.appendChild(this.overlay);
 
-        // 4. Trigger Button
+        // 4. Trigger Button (El botón flotante >_)
         const trigger = document.createElement('div');
         trigger.className = 'arch-trigger';
         trigger.textContent = '>_';
@@ -54,30 +55,42 @@ window.ArchUI = {
         document.body.appendChild(trigger);
     },
 
-    // --- MODO 1: GRID ---
+    // =========================================================================
+    // 1. MODO GRID (SELECTOR PRINCIPAL)
+    // =========================================================================
     renderGrid: function(templates, onSelect) {
         this.container.innerHTML = '';
         this.container.className = 'arch-grid';
         this.headerTitle.textContent = '>arch_console // Select Mode';
 
+        // --- A. Botón Especial: RECORD CONTEXT (Shadow Mode) ---
+        const recBtn = document.createElement('div');
+        recBtn.className = 'arch-btn arch-btn-rec'; // Clase especial roja
+        recBtn.innerHTML = '🔴 REC CONTEXT';
+        recBtn.onclick = () => {
+            this.startShadowMode(templates, onSelect);
+        };
+        this.container.appendChild(recBtn);
+
+        // --- B. Botones Normales (Templates) ---
         Object.entries(templates).forEach(([key, templateContent]) => {
             const btn = document.createElement('div');
             btn.className = 'arch-btn';
             btn.textContent = key;
             
             btn.onclick = () => {
-                // A) MODO CANVAS (Detección especial)
+                // DETECCIÓN 1: MODO CANVAS
                 if (key === 'SKETCH_TO_UI') {
                     this.renderCanvas(key, templateContent, onSelect);
                     return;
                 }
 
-                // B) MODO VARIABLES VIVAS
+                // DETECCIÓN 2: VARIABLES VIVAS
                 const vars = window.TemplateManager.parseVariables(templateContent);
                 if (vars.length > 0) {
                     this.renderForm(key, templateContent, vars, onSelect);
                 } else {
-                    // C) MODO DIRECTO
+                    // DETECCIÓN 3: INYECCIÓN DIRECTA
                     onSelect(templateContent); 
                     this.close();
                 }
@@ -86,7 +99,9 @@ window.ArchUI = {
         });
     },
 
-    // --- MODO 2: FORMULARIO (Ya lo tenías) ---
+    // =========================================================================
+    // 2. MODO FORMULARIO (VARIABLES VIVAS)
+    // =========================================================================
     renderForm: function(modeKey, templateContent, variables, onSelect) {
         this.container.innerHTML = '';
         this.container.className = 'arch-form-container';
@@ -103,6 +118,7 @@ window.ArchUI = {
 
             let inputEl;
             if (v.options) {
+                // Dropdown
                 inputEl = document.createElement('select');
                 inputEl.className = 'arch-select';
                 v.options.forEach(opt => {
@@ -112,10 +128,12 @@ window.ArchUI = {
                     inputEl.appendChild(option);
                 });
             } else {
+                // Texto Libre
                 inputEl = document.createElement('input');
                 inputEl.type = 'text';
                 inputEl.className = 'arch-input';
                 inputEl.placeholder = `Enter ${v.key}...`;
+                // Autofocus
                 if (Object.keys(inputsMap).length === 0) setTimeout(() => inputEl.focus(), 100);
             }
             inputsMap[v.key] = inputEl;
@@ -124,6 +142,7 @@ window.ArchUI = {
             this.container.appendChild(group);
         });
 
+        // Botones de Acción (Back / Run)
         const actions = document.createElement('div');
         actions.className = 'arch-form-actions';
         
@@ -138,6 +157,8 @@ window.ArchUI = {
         runBtn.onclick = () => {
             const values = {};
             for (const [key, el] of Object.entries(inputsMap)) values[key] = el.value;
+            
+            // Compilar Variables
             const filledTemplate = window.TemplateManager.compileVariables(templateContent, values);
             onSelect(filledTemplate);
             this.close();
@@ -149,43 +170,42 @@ window.ArchUI = {
         this.container.appendChild(actions);
     },
 
-    // --- MODO 3: CANVAS (NUEVO) ---
+    // =========================================================================
+    // 3. MODO CANVAS (PIZARRA DE DIBUJO)
+    // =========================================================================
     renderCanvas: function(modeKey, templateContent, onSelect) {
         this.container.innerHTML = '';
         this.container.className = 'arch-canvas-wrapper';
         this.headerTitle.textContent = `>_ SKETCH BOARD`;
 
-        // 1. Crear el elemento Canvas
+        // Crear Canvas
         const canvas = document.createElement('canvas');
         canvas.className = 'arch-canvas-board';
         canvas.width = 400;
         canvas.height = 300;
         const ctx = canvas.getContext('2d');
 
-        // Configuración inicial de dibujo
+        // Configuración
         ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height); // Fondo negro
-        ctx.strokeStyle = '#00ff9d'; // Color Neón
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#00ff9d';
         ctx.lineWidth = 2;
         ctx.lineCap = 'round';
 
         // Lógica de Dibujo
         let drawing = false;
-        
         const startDraw = (e) => {
             drawing = true;
             ctx.beginPath();
             const rect = canvas.getBoundingClientRect();
             ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
         };
-        
         const draw = (e) => {
             if (!drawing) return;
             const rect = canvas.getBoundingClientRect();
             ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
             ctx.stroke();
         };
-        
         const endDraw = () => {
             drawing = false;
             ctx.closePath();
@@ -196,38 +216,32 @@ window.ArchUI = {
         canvas.addEventListener('mouseup', endDraw);
         canvas.addEventListener('mouseout', endDraw);
 
-        // 2. Toolbar
+        // Toolbar
         const toolbar = document.createElement('div');
         toolbar.className = 'arch-canvas-toolbar';
 
         const clearBtn = document.createElement('button');
         clearBtn.className = 'arch-tool-btn';
         clearBtn.textContent = 'CLEAR';
-        clearBtn.onclick = () => {
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        };
+        clearBtn.onclick = () => ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         const genBtn = document.createElement('button');
         genBtn.className = 'arch-tool-btn arch-btn-gen';
         genBtn.textContent = 'COPY & GENERATE';
-        
-        // 3. LA MAGIA: Canvas -> Portapapeles -> Chat
         genBtn.onclick = () => {
             canvas.toBlob(blob => {
                 try {
-                    // Escribir imagen en Portapapeles
                     const item = new ClipboardItem({ "image/png": blob });
                     navigator.clipboard.write([item]).then(() => {
-                        // Inyectar el Prompt de Texto
                         onSelect(templateContent + "\n\n(PASTE THE IMAGE HERE WITH CTRL+V)");
                         alert("Sketch copied! Now PASTE (Ctrl+V) inside the chat.");
                         this.close();
                     }).catch(err => {
                         console.error("Clipboard error:", err);
-                        alert("Error copying image via API. Try checking browser permissions.");
+                        alert("Error copying image via API.");
                     });
                 } catch (e) {
-                    alert("Your browser does not support automatic image copying from extensions.");
+                    alert("Browser not supported for direct copy.");
                 }
             });
         };
@@ -245,6 +259,45 @@ window.ArchUI = {
         this.container.appendChild(toolbar);
     },
 
+    // =========================================================================
+    // 4. MODO SHADOW (GRABADORA DE CONTEXTO)
+    // =========================================================================
+    startShadowMode: function(templates, onSelect) {
+        this.close(); // Cerramos el modal grande
+        
+        // Iniciar el Recorder (definido en content.js)
+        if (window.ShadowRecorder) {
+            window.ShadowRecorder.start();
+        } else {
+            alert("Error: ShadowRecorder not loaded properly.");
+            return;
+        }
+
+        // Crear Indicador Flotante
+        const indicator = document.createElement('div');
+        indicator.className = 'arch-shadow-indicator';
+        indicator.innerHTML = '🔴 REC <br><span style="font-size:10px">Click to Stop</span>';
+        
+        indicator.onclick = () => {
+            // DETENER GRABACIÓN
+            const logs = window.ShadowRecorder.stop();
+            indicator.remove();
+            
+            // Buscar el template SHADOW_OBSERVER
+            const shadowTemplate = templates['SHADOW_OBSERVER'] || "LOG:\n{{INPUT}}";
+            
+            // Inyectar logs
+            const finalPrompt = window.TemplateManager.compile(shadowTemplate, logs);
+            
+            onSelect(finalPrompt);
+        };
+
+        document.body.appendChild(indicator);
+    },
+
+    // =========================================================================
+    // UTILIDADES
+    // =========================================================================
     close: function() {
         if (this.overlay) this.overlay.style.display = 'none';
     },
@@ -252,7 +305,9 @@ window.ArchUI = {
     cleanup: function() {
         const existOv = document.querySelector('.arch-modal-overlay');
         const existTr = document.querySelector('.arch-trigger');
+        const existInd = document.querySelector('.arch-shadow-indicator');
         if (existOv) existOv.remove();
         if (existTr) existTr.remove();
+        if (existInd) existInd.remove();
     }
 };
