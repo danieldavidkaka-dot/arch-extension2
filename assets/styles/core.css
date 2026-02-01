@@ -8,9 +8,7 @@
   --arch-error: #ff4444;
 }
 
-/* ==========================================================================
-   1. BOTÓN FLOTANTE PRINCIPAL
-   ========================================================================== */
+/* 1. BOTÓN FLOTANTE */
 .arch-trigger {
   position: fixed;
   bottom: 20px;
@@ -27,13 +25,11 @@
   cursor: pointer;
   z-index: 2147483647 !important;
   box-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
-  user-select: none;
 }
-
 .arch-trigger:hover {
   transform: scale(1.1);
   box-shadow: 0 0 20px var(--arch-neon);
@@ -41,13 +37,7 @@
   color: #000;
 }
 
-.arch-trigger:active {
-  transform: scale(0.95);
-}
-
-/* ==========================================================================
-   2. VENTANA MODAL (Overlay y Contenedor)
-   ========================================================================== */
+/* 2. VENTANA MODAL */
 .arch-modal-overlay {
   position: fixed;
   top: 0;
@@ -62,7 +52,6 @@
   justify-content: center;
   animation: archFadeIn 0.2s ease-out;
 }
-
 .arch-modal {
   background: var(--arch-bg);
   border: 1px solid var(--arch-neon);
@@ -76,7 +65,6 @@
   overflow: hidden;
   font-family: 'Segoe UI', system-ui, sans-serif;
 }
-
 .arch-modal-header {
   padding: 12px 16px;
   background: var(--arch-panel);
@@ -85,15 +73,12 @@
   justify-content: space-between;
   align-items: center;
 }
-
 .arch-title {
   color: var(--arch-neon);
   font-family: 'Courier New', monospace;
   font-weight: bold;
   font-size: 14px;
-  letter-spacing: 1px;
 }
-
 .arch-close-btn {
   background: none;
   border: none;
@@ -101,11 +86,8 @@
   cursor: pointer;
   font-size: 18px;
 }
-.arch-close-btn:hover { color: #fff; }
 
-/* ==========================================================================
-   3. GRID SYSTEM (Selector de Modos)
-   ========================================================================== */
+/* 3. GRID */
 .arch-grid {
   padding: 16px;
   display: grid;
@@ -113,7 +95,6 @@
   gap: 10px;
   overflow-y: auto;
 }
-
 .arch-btn {
   background: #111;
   border: 1px solid #333;
@@ -126,53 +107,10 @@
   font-family: 'Courier New', monospace;
   transition: all 0.2s;
 }
-
 .arch-btn:hover {
   border-color: var(--arch-neon);
   color: var(--arch-neon);
   background: rgba(0, 255, 157, 0.05);
-  transform: translateY(-2px);
-}
-
-/* Scrollbar Hacker Style */
-.arch-grid::-webkit-scrollbar {
-  width: 6px;
-}
-.arch-grid::-webkit-scrollbar-track {
-  background: #000;
-}
-.arch-grid::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 3px;
-}
-.arch-grid::-webkit-scrollbar-thumb:hover {
-  background: var(--arch-neon);
-}
-
-/* ==========================================================================
-   4. SNATCHER (Botón de Descarga)
-   ========================================================================== */
-.arch-snatcher-btn {
-  position: fixed;
-  top: 15px;
-  right: 70px;
-  background: #111;
-  color: #fff;
-  border: 1px solid #444;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-family: sans-serif;
-  cursor: pointer;
-  z-index: 9999;
-  opacity: 0.7;
-  transition: opacity 0.2s;
-}
-
-.arch-snatcher-btn:hover {
-  opacity: 1;
-  border-color: var(--arch-neon);
-  color: var(--arch-neon);
 }
 
 @keyframes archFadeIn {

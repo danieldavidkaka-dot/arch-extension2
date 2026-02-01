@@ -1,5 +1,5 @@
 // src/core/library.js - Static Data v12.0
-// La "Base de Datos" de Prompts de >arch
+// La "Base de Datos" Maestra de Prompts de >arch
 console.log(">arch: Library Loaded v12.0");
 
 window.ARCH_LIBRARY = {
@@ -52,20 +52,18 @@ window.ARCH_LIBRARY = {
 {{INPUT}}`,
 
     // =========================================================================
-    // 2. VISUAL & DATA OPS (Frontend y Visión)
+    // 2. VISUAL & DATA OPS (Frontend, Visión y Datos)
     // =========================================================================
     'SKETCH_TO_UI': `> **[MODE: SKETCH-TO-CODE]**
 > ROLE: Senior Frontend Engineer with Computer Vision.
-> TASK: Analyze the attached wireframe sketch and convert it into code.
-> INPUT_IMAGE: [See Clipboard Attachment]
+> TASK: Analyze the attached wireframe sketch (from clipboard) and convert it into code.
 > INTERPRETATION GUIDE:
 - Box/Rectangle = Container / Div / Section.
 - Lines = Text / Paragraphs.
 - Circle = Image / Avatar / Logo.
 - X inside Box = Image Placeholder.
-- Horizontal Lines in Header = Navigation Menu.
 > STACK: HTML + Tailwind CSS.
-> OUTPUT: Return the single HTML file containing the layout. Use 'border-dashed' or 'bg-gray-200' for placeholders.`,
+> OUTPUT: Return the single HTML file containing the layout. Use 'border-dashed' placeholders.`,
 
     'UI_REPLICA': `> **[MODE: PIXEL PERFECT REPLICA]**
 > ROLE: UI Engineer.
@@ -79,6 +77,11 @@ window.ARCH_LIBRARY = {
 > STACK: React (Shadcn UI compatible) + Tailwind CSS.
 > TASK: Create a modern, accessible component based on this request:
 {{INPUT}}`,
+
+    'VISION': `> **[MODE: COMPUTER VISION ANALYST]**
+> ROLE: Senior Data Analyst.
+> TASK: Analyze the attached image (diagram, chart, or screenshot) and describe its components, relationships, and data structure in detail.
+> GOAL: Convert visual information into text/code representation.`,
 
     'DATA': `> **[MODE: MOCK DATA GENERATOR]**
 > ROLE: Data Scientist.
@@ -101,7 +104,7 @@ window.ARCH_LIBRARY = {
 > TASK:
 1. Reconstruct the user's journey from the log.
 2. Identify the goal (e.g., "User is trying to find the API Key").
-3. Suggest an automation script (Playwright) or a UI improvement based on the friction points.`,
+3. Suggest an automation script (Playwright) or a UI improvement.`,
 
     'CHAIN_DENSITY': `> **[MODE: RECURSIVE QUALITY]**
 > TASK: Improve the following content recursively 3 times.
@@ -111,6 +114,12 @@ window.ARCH_LIBRARY = {
 3. Generate V2 (Address critiques).
 4. Generate V3 (Final Polish).
 > INPUT:
+{{INPUT}}`,
+
+    'CHAIN_STEPS': `> **[MODE: STEP-BY-STEP EXECUTION]**
+> TASK: Execute the request in distinct steps.
+> RULE: Pause after each step and ask the user "Proceed to Step X?". Do not output the full solution at once.
+> REQUEST:
 {{INPUT}}`,
 
     'LAM_SCRIPT': `> **[MODE: BROWSER AUTOMATION]**
@@ -133,6 +142,11 @@ window.ARCH_LIBRARY = {
 > AGENT GOAL:
 {{INPUT}}`,
 
+    'FLOW': `> **[MODE: LOGIC FLOWCHART]**
+> TASK: Convert the following process/logic into a Mermaid.js flowchart syntax.
+> PROCESS:
+{{INPUT}}`,
+
     // =========================================================================
     // 4. AUTONOMOUS AGENTS (Roles de Alto Nivel)
     // =========================================================================
@@ -149,7 +163,7 @@ window.ARCH_LIBRARY = {
 {{INPUT}}`,
 
     // =========================================================================
-    // 5. EXAMPLES (Ejemplos de Variables Vivas)
+    // 5. EXAMPLES (Variables Vivas)
     // =========================================================================
     'SUPER_FEATURE': `> **[MODE: GENIUS ARCHITECT]**
 > TARGET_STACK: {{VAR:Stack:React+Next.js|Python+FastAPI|Node+Express|Flutter|Rust}}
@@ -162,8 +176,7 @@ window.ARCH_LIBRARY = {
 > INSTRUCTIONS:
 1. Act as a World-Class Expert in {{VAR:Stack}}.
 2. Generate the code for the objective: "{{VAR:Objetivo}}".
-3. Strict Constraint: Code must be optimized for {{VAR:Nivel}} quality.
-4. Include {{VAR:Tests}} as requested.`,
+3. Strict Constraint: Code must be optimized for {{VAR:Nivel}} quality.`,
 
     'MARKETING_PRO': `> **[MODE: MARKETING GURU]**
 Actúa como un experto en Marketing Digital especializado en {{VAR:Plataforma:Instagram|LinkedIn|TikTok}}.

@@ -10,10 +10,7 @@
     "clipboardWrite"
   ],
   "host_permissions": [
-    "https://chatgpt.com/*",
-    "https://claude.ai/*",
-    "https://gemini.google.com/*",
-    "https://chat.deepseek.com/*"
+    "<all_urls>"
   ],
   "action": {
     "default_popup": "src/pages/popup.html",
@@ -27,10 +24,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://chatgpt.com/*",
-        "https://claude.ai/*",
-        "https://gemini.google.com/*",
-        "https://chat.deepseek.com/*"
+        "<all_urls>"
       ],
       "css": [
         "assets/styles/core.css",
