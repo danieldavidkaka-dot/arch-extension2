@@ -126,6 +126,21 @@ const DEFAULT_TEMPLATES = {
     // 🎨 GRUPO 3: VISUAL & DATA OPS (3)
     // =================================================================
 
+// ... otros templates ...
+
+    'SKETCH_TO_UI': `> **[MODE: SKETCH-TO-CODE]**
+> ROLE: Senior Frontend Engineer with Computer Vision.
+> TASK: Analyze the attached wireframe sketch and convert it into code.
+> INPUT_IMAGE: [See Clipboard Attachment]
+> INTERPRETATION GUIDE:
+- Box/Rectangle = Container / Div / Section.
+- Lines = Text / Paragraphs.
+- Circle = Image / Avatar / Logo.
+- X inside Box = Image Placeholder.
+- Horizontal Lines in Header = Navigation Menu.
+> STACK: HTML + Tailwind CSS.
+> OUTPUT: Return the single HTML file containing the layout. Use 'border-dashed' or 'bg-gray-200' for placeholders.`,
+   
     'UI/UX': `> **[UI/UX GEN]**
 > INPUT: "{{INPUT}}"
 > STACK: React + Tailwind + Lucide + Shadcn.

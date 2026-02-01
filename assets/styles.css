@@ -243,3 +243,63 @@
   font-family: 'Courier New', monospace;
 }
 .arch-btn-back:hover { border-color: #666; }
+
+/* ==========================================================================
+   6. ARCH CANVAS (PIZARRA SEMÁNTICA)
+   ========================================================================== */
+.arch-canvas-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: #000;
+}
+
+canvas.arch-canvas-board {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 4px;
+  cursor: crosshair;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+  touch-action: none; /* Prevenir scroll al dibujar en táctil */
+}
+
+.arch-canvas-toolbar {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.arch-tool-btn {
+  background: #222;
+  border: 1px solid #444;
+  color: #888;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  flex: 1;
+  transition: all 0.2s;
+}
+
+.arch-tool-btn:hover {
+  background: #333;
+  color: #fff;
+}
+
+.arch-tool-btn.active {
+  background: #222;
+  border-color: var(--arch-neon);
+  color: var(--arch-neon);
+}
+
+.arch-btn-gen {
+  background: var(--arch-neon);
+  color: #000;
+  font-weight: bold;
+  flex: 2;
+  border: none;
+}
+.arch-btn-gen:hover { opacity: 0.9; box-shadow: 0 0 10px var(--arch-dim); }

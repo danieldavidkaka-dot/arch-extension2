@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>>arch v8.1 Guide</title>
+  <title>>arch v9.0 Guide</title>
   <style>
     /* --- ESTILOS BASE --- */
     :root { 
@@ -16,6 +16,7 @@
         --flow-color: #f59e0b; 
         --vis-color: #8b5cf6; 
         --agent-color: #ef4444; 
+        --syntax-color: #e879f9; /* Color nuevo para sintaxis */
     }
 
     body { 
@@ -102,6 +103,7 @@
     .border-flow { border-left-color: var(--flow-color); }
     .border-vis { border-left-color: var(--vis-color); }
     .border-agent { border-left-color: var(--agent-color); }
+    .border-syntax { border-left-color: var(--syntax-color); border-style: dashed; } /* Estilo especial para sintaxis */
 
     /* --- ETIQUETA NEW --- */
     .new-badge {
@@ -147,10 +149,24 @@
 
   <div class="header">
     <div class="logo">>arch_guide</div>
-    <div class="version">v8.1</div>
+    <div class="version">v9.0</div>
   </div>
 
   <div class="container">
+
+    <div>
+        <div class="section-title" style="color: var(--syntax-color);">⚡ Studio Syntax (New)</div>
+        <div class="modes-grid">
+            <div class="mode-item border-syntax syntax-trigger" data-code="{{VAR:Name}}">
+                <span class="mode-name">{{VAR:Name}}</span>
+                <span class="mode-desc">Click to Copy: Input Field</span>
+            </div>
+            <div class="mode-item border-syntax syntax-trigger" data-code="{{VAR:Name:Opt1|Opt2}}">
+                <span class="mode-name">{{VAR:Name:A|B}}</span>
+                <span class="mode-desc">Click to Copy: Dropdown Menu</span>
+            </div>
+        </div>
+    </div>
 
     <div>
       <div class="section-title">🤖 Autonomous Agents</div>
@@ -158,12 +174,10 @@
         <div class="mode-item border-agent" title="Acts as a Project Manager distributing tasks to Claude, GPT-4o, Midjourney, etc.">
             <span class="mode-name">AI_ORCHESTRATOR</span>
             <span class="mode-desc">Multi-Model Project Manager</span>
-            <span class="new-badge">NEW</span>
         </div>
         <div class="mode-item border-agent" title="Forces the AI to check facts, admit ignorance, and avoid hallucinations.">
             <span class="mode-name">UNIVERSAL_TRUTH</span>
             <span class="mode-desc">Anti-Hallucination Fact Checker</span>
-            <span class="new-badge">NEW</span>
         </div>
       </div>
     </div>
@@ -174,7 +188,6 @@
           <div class="mode-item border-eng" title="Analyzes Frontend code to generate a production-ready Supabase SQL Schema (3NF).">
               <span class="mode-name">DB_ARCHITECT</span>
               <span class="mode-desc">Frontend to Supabase SQL</span>
-              <span class="new-badge">NEW</span>
           </div>
           <div class="mode-item border-eng" title="Forces output to be strictly VALID JSON with no Markdown or conversational filler.">
               <span class="mode-name">DEV</span>
@@ -201,7 +214,6 @@
         <div class="mode-item border-vis" title="Uses Computer Vision to reverse-engineer a screenshot into Pixel-Perfect React/Tailwind code.">
             <span class="mode-name">UI_REPLICA</span>
             <span class="mode-desc">Pixel-Perfect from Screenshot</span>
-            <span class="new-badge">NEW</span>
         </div>
         <div class="mode-item border-vis" title="Generates modern, accessible UI components using Shadcn/Lucide/Tailwind.">
             <span class="mode-name">UI/UX</span>
@@ -254,7 +266,7 @@
 
     <div class="footer-actions">
         <button id="openOptions" class="btn btn-primary" title="Open the Template Editor to customize your prompts">Open Studio (Edit)</button>
-        <div class="btn" style="cursor: default; opacity: 0.5;">18 Modes Ready</div>
+        <div class="btn" style="cursor: default; opacity: 0.5;">v9.0 Live Engine</div>
     </div>
 
   </div>
