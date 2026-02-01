@@ -8,19 +8,129 @@
   <link rel="stylesheet" href="../../assets/styles/modules.css">
   
   <style>
-    /* Ajustes específicos para la página de opciones que no están en core.css */
-    body { padding: 40px; max-width: 900px; margin: 0 auto; overflow-y: auto; }
-    .studio-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 20px; }
-    .studio-grid { display: grid; grid-template-columns: 250px 1fr; gap: 30px; height: calc(100vh - 150px); }
-    .sidebar { border-right: 1px solid #333; padding-right: 20px; overflow-y: auto; }
-    .editor-area { display: flex; flex-direction: column; gap: 15px; }
-    #templateName { background: #111; border: 1px solid #333; color: var(--arch-neon); padding: 10px; font-family: monospace; font-size: 14px; width: 100%; }
-    #templateContent { background: #050505; border: 1px solid #333; color: #ccc; padding: 15px; font-family: monospace; font-size: 13px; flex-grow: 1; resize: none; line-height: 1.5; }
-    .template-item { padding: 8px 12px; margin-bottom: 4px; cursor: pointer; border-radius: 4px; color: #888; transition: 0.2s; font-family: monospace; font-size: 12px; }
-    .template-item:hover { background: #1a1a1a; color: #fff; }
-    .template-item.active { background: rgba(0, 255, 157, 0.1); color: var(--arch-neon); border-left: 2px solid var(--arch-neon); }
-    .btn-save { background: var(--arch-neon); color: #000; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; }
-    .btn-delete { background: #331111; color: #ff4444; border: 1px solid #552222; padding: 10px 20px; cursor: pointer; }
+    /* --- CORRECCIÓN MODO OSCURO --- */
+    body { 
+        padding: 40px; 
+        max-width: 900px; 
+        margin: 0 auto; 
+        overflow-y: auto; 
+        
+        /* Aquí aplicamos el fondo negro y texto claro */
+        background-color: var(--arch-bg); 
+        color: #e5e5e5;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* Header */
+    .studio-header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 30px; 
+        border-bottom: 1px solid #333; 
+        padding-bottom: 20px; 
+    }
+
+    /* Layout Principal */
+    .studio-grid { 
+        display: grid; 
+        grid-template-columns: 250px 1fr; 
+        gap: 30px; 
+        height: calc(100vh - 150px); 
+    }
+
+    /* Barra Lateral (Lista) */
+    .sidebar { 
+        border-right: 1px solid #333; 
+        padding-right: 20px; 
+        overflow-y: auto; 
+    }
+
+    /* Área de Edición */
+    .editor-area { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 15px; 
+    }
+
+    /* Inputs y Textareas (Forzar fondo negro) */
+    #templateName { 
+        background: #111; 
+        border: 1px solid #333; 
+        color: var(--arch-neon); 
+        padding: 10px; 
+        font-family: 'Courier New', monospace; 
+        font-size: 14px; 
+        width: 100%; 
+        outline: none;
+    }
+    
+    #templateContent { 
+        background: #050505; 
+        border: 1px solid #333; 
+        color: #ccc; 
+        padding: 15px; 
+        font-family: 'Courier New', monospace; 
+        font-size: 13px; 
+        flex-grow: 1; 
+        resize: none; 
+        line-height: 1.5; 
+        outline: none;
+    }
+
+    #templateName:focus, #templateContent:focus {
+        border-color: var(--arch-neon);
+    }
+
+    /* Items de la lista */
+    .template-item { 
+        padding: 8px 12px; 
+        margin-bottom: 4px; 
+        cursor: pointer; 
+        border-radius: 4px; 
+        color: #888; 
+        transition: 0.2s; 
+        font-family: 'Courier New', monospace; 
+        font-size: 12px; 
+    }
+    .template-item:hover { 
+        background: #1a1a1a; 
+        color: #fff; 
+    }
+    .template-item.active { 
+        background: rgba(0, 255, 157, 0.1); 
+        color: var(--arch-neon); 
+        border-left: 2px solid var(--arch-neon); 
+    }
+
+    /* Botones */
+    .btn-save { 
+        background: var(--arch-neon); 
+        color: #000; 
+        border: none; 
+        padding: 10px 20px; 
+        font-weight: bold; 
+        cursor: pointer; 
+        font-family: 'Courier New', monospace;
+    }
+    .btn-save:hover { opacity: 0.9; }
+
+    .btn-delete { 
+        background: #331111; 
+        color: #ff4444; 
+        border: 1px solid #552222; 
+        padding: 10px 20px; 
+        cursor: pointer; 
+        font-family: 'Courier New', monospace;
+    }
+    .btn-delete:hover { background: #552222; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #000; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #555; }
+
   </style>
 </head>
 <body>
