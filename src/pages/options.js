@@ -1,5 +1,5 @@
-// src/pages/options.js - v16.5 (Cloud Sync Enabled)
-console.log(">arch: Options v16.5 Loaded");
+// src/pages/options.js - v17.0 (Authenticated Save Logic)
+console.log(">arch: Options v17.0 Loaded");
 
 document.addEventListener('DOMContentLoaded', () => {
     restoreUserOptions(); // Cargar templates del usuario
@@ -29,24 +29,34 @@ function saveOption() {
         // Guardamos primero en LOCAL (Chrome)
         chrome.storage.local.set({ arch_user_templates: templates }, () => {
             
-            // --- INICIO LÓGICA CLOUD ---
-            // ID Temporal para pruebas (debe coincidir con un UUID válido o RLS desactivado)
-            const TEMP_USER_ID = "00000000-0000-0000-0000-000000000000"; 
+            // --- INICIO LÓGICA CLOUD (ACTUALIZADA v17) ---
             
             if (window.ArchCloud) {
                 // Notificar al usuario que estamos intentando subirlo
                 showStatus(`Guardando en Nube...`, '#eab308');
 
-                window.ArchCloud.upsertTemplate({
-                    command_key: key,
-                    content: content
-                }, TEMP_USER_ID)
-                .then(() => {
-                    showStatus(`Guardado (Local + Cloud) [${key}]`, '#10b981');
+                // Usamos la nueva función saveTemplate que ya sabe obtener la sesión
+                const templateData = {
+                    trigger: key,
+                    content: content,
+                    description: "Creado desde Options"
+                };
+
+                window.ArchCloud.saveTemplate(templateData)
+                .then((result) => {
+                    if (result.error) {
+                        // Si Cloud dice error (ej: no logueado)
+                        console.error("Cloud Error:", result.message);
+                        showStatus(`Guardado Local (Fallo Nube: ${result.message})`, '#f59e0b');
+                    } else {
+                        // Éxito total
+                        showStatus(`Guardado (Local + Cloud) [${key}]`, '#10b981');
+                    }
                 })
                 .catch((err) => {
-                    console.error("Cloud Error:", err);
-                    showStatus(`Guardado Local (Fallo Nube) [${key}]`, '#f59e0b');
+                    // Error de red o código
+                    console.error("Cloud Crash:", err);
+                    showStatus(`Guardado Local (Error Red) [${key}]`, '#f59e0b');
                 });
             } else {
                 // Si no existe cloud.js, solo confirmamos local

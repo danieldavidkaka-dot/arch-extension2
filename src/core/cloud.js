@@ -1,56 +1,77 @@
-// src/core/cloud.js
-// Cliente HTTP para Supabase - Conexión establecida
-console.log(">arch: Cloud Module Loaded");
+// src/core/cloud.js - v17.3 (Fix: Removed 'is_public' & 'description')
+console.log(">arch: Cloud Module Loaded (Minimal Schema)");
 
-// TUS CREDENCIALES REALES
 const SUPABASE_URL = "https://fbnhqgcnhxpkecjhlmsu.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZibmhxZ2NuaHhwa2VjamhsbXN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNTU5NjQsImV4cCI6MjA4NTYzMTk2NH0.9JT-vyn9QB7PPX6TS0Wfn5P2a1MyhzTbGUXrq0K38BM";
 
 window.ArchCloud = {
-    // Headers de autenticación
-    _headers: (token = null) => {
-        return {
-            "apikey": SUPABASE_KEY,
-            "Authorization": `Bearer ${token || SUPABASE_KEY}`,
-            "Content-Type": "application/json",
-            "Prefer": "return=representation" // Importante: para que nos devuelva el dato insertado
-        };
+    
+    // --- A. OBTENER SESIÓN ACTUAL ---
+    getSession: function() {
+        return new Promise((resolve) => {
+            chrome.storage.local.get(['arch_session'], (result) => {
+                if (result.arch_session && result.arch_session.user) {
+                    resolve(result.arch_session);
+                } else {
+                    resolve(null);
+                }
+            });
+        });
     },
 
-    /**
-     * Guarda o Actualiza un template en la nube
-     */
-    upsertTemplate: async function(template, userId) {
-        // Endpoint REST de Supabase
-        const url = `${SUPABASE_URL}/rest/v1/user_templates`;
-        
-        const body = {
-            user_id: userId,
-            command_key: template.command_key,
-            content: template.content,
-            category: "GENERAL",
-            updated_at: new Date().toISOString()
-        };
-
+    // --- B. GUARDAR TEMPLATE (Esquema Minimalista) ---
+    saveTemplate: async function(templateData) {
         try {
-            // POST con on_conflict actúa como UPSERT en Supabase
-            const res = await fetch(url + "?on_conflict=user_id,command_key", {
-                method: "POST",
-                headers: this._headers(),
-                body: JSON.stringify(body)
-            });
+            console.log("☁️ Iniciando guardado seguro...");
             
-            if (!res.ok) {
-                const err = await res.json();
-                console.error(">arch cloud error details:", err);
-                throw err;
+            const session = await this.getSession();
+            
+            if (!session) {
+                return { error: true, message: "⚠️ No has iniciado sesión." };
             }
 
-            console.log(">arch cloud: Saved successfully", body.command_key);
-            return await res.json();
-        } catch (e) {
-            console.error(">arch cloud connection failed:", e);
-            throw e; // Lanzar error para que la UI sepa que falló
+            // DATOS EXACTOS (Solo lo que tu tabla acepta)
+            const payload = {
+                user_id: session.user.id,
+                command_key: templateData.trigger,
+                content: templateData.content,
+                category: "GENERAL",
+                // description: ELIMINADO (No existe en DB)
+                // is_public: ELIMINADO (Causaba el error anterior)
+                created_at: new Date().toISOString()
+            };
+
+            // URL CON "ON_CONFLICT" (Para permitir editar)
+            const url = `${SUPABASE_URL}/rest/v1/user_templates?on_conflict=user_id,command_key`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${session.token}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                let errorMessage = `Error ${response.status}: ${response.statusText}`;
+                try {
+                    const errorData = await response.json(); 
+                    console.error("Cloud Error Details:", errorData);
+                    if(errorData.message) errorMessage = errorData.message;
+                } catch(e) { }
+
+                throw new Error(errorMessage);
+            }
+
+            console.log("✅ Guardado exitoso para:", session.user.email);
+            return { success: true };
+
+        } catch (error) {
+            console.error(">arch cloud connection failed:", error);
+            return { error: true, message: error.message };
         }
     }
 };

@@ -3,16 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <style>
-    /* REGLA MAESTRA: Forzar tamaño */
+    /* --- ESTILOS BASE (Tus estilos originales) --- */
     html, body {
       width: 300px !important;
-      min-height: 160px !important;
+      min-height: 250px !important; /* Aumenté un poco la altura para que quepa el login */
       margin: 0; padding: 15px;
       background-color: #09090b;
       font-family: 'Segoe UI', monospace, sans-serif;
       color: #e4e4e7;
-      overflow: hidden;
     }
+    
+    .hidden { display: none !important; }
+
+    /* Header del App (Original) */
     .header {
       margin-bottom: 15px;
       display: flex; justify-content: space-between; align-items: center;
@@ -20,28 +23,87 @@
     .title { font-weight: bold; color: #10b981; font-size: 14px; }
     .version { font-size: 10px; background: #18181b; padding: 2px 6px; border-radius: 4px; color: #71717a; border: 1px solid #27272a; }
     
-    button {
+    /* Botones del Launcher (Originales) */
+    button.launcher-btn {
       background: #18181b; border: 1px solid #27272a; color: #fff; padding: 12px;
       border-radius: 6px; cursor: pointer; font-family: monospace; font-size: 12px;
       transition: all 0.2s; display: flex; align-items: center; justify-content: center; width: 100%; margin-bottom: 10px;
     }
-    button:hover { background: #27272a; border-color: #3f3f46; }
+    button.launcher-btn:hover { background: #27272a; border-color: #3f3f46; }
     
-    /* Botón Verde */
+    /* Botón Verde (Consola) */
     button#open-console { background: #10b981; color: #000; border: none; font-weight: bold; }
     button#open-console:hover { opacity: 0.9; }
+
+    /* --- NUEVOS ESTILOS PARA EL LOGIN --- */
+    h2.auth-title { font-size: 16px; color: #fff; margin: 0 0 10px 0; text-align: center; }
+    p.auth-desc { font-size: 12px; color: #a1a1aa; text-align: center; margin-bottom: 15px; }
+
+    input {
+      width: 100%; padding: 10px; margin-bottom: 10px; background: #18181b; 
+      border: 1px solid #27272a; color: #fff; border-radius: 6px; box-sizing: border-box; outline: none; font-family: sans-serif;
+    }
+    input:focus { border-color: #10b981; }
+
+    .status-msg { font-size: 11px; margin-top: 5px; height: 15px; text-align: center; color: #ef4444; }
+    .success { color: #10b981; }
+
+    /* Barra de Usuario (Cuando estás logueado) */
+    .user-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #18181b; padding: 8px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #27272a;
+    }
+    .user-info { font-size: 11px; color: #a1a1aa; display: flex; flex-direction: column;}
+    .user-email { color: #fff; font-weight: bold; }
+    
+    .logout-btn { 
+      background: transparent; border: 1px solid #ef4444; color: #ef4444; 
+      font-size: 10px; padding: 4px 8px; border-radius: 4px; cursor: pointer; 
+    }
+    .logout-btn:hover { background: #ef4444; color: #000; }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <span class="title">>arch_console</span>
-    <span class="version">v16.4</span>
-  </div>
-  
-  <button id="open-console">⚡ ABRIR CONSOLA</button>
-  <button id="open-settings">⚙️ CONFIGURACIÓN Y MANUAL</button>
+  <div id="view-login">
+    <div style="text-align:center; margin-bottom:10px;">
+        <span class="title" style="font-size:20px">>arch</span>
+    </div>
+    <h2 class="auth-title">Identifícate</h2>
+    <p class="auth-desc">Sincroniza tus templates en la nube</p>
 
+    <input type="email" id="email" placeholder="tucorreo@ejemplo.com">
+    <input type="password" id="password" placeholder="Contraseña">
+    
+    <button id="btn-login" class="launcher-btn" style="background: #10b981; color: #000; font-weight: bold;">
+      ENTRAR / REGISTRARSE
+    </button>
+    
+    <div id="login-status" class="status-msg"></div>
+  </div>
+
+
+  <div id="view-app" class="hidden">
+    
+    <div class="user-bar">
+        <div class="user-info">
+            <span>Conectado como:</span>
+            <span id="display-email" class="user-email">...</span>
+        </div>
+        <button id="btn-logout" class="logout-btn">SALIR</button>
+    </div>
+
+    <div class="header">
+      <span class="title">>arch_console</span>
+      <span class="version">v16.5</span>
+    </div>
+    
+    <button id="open-console" class="launcher-btn">⚡ ABRIR CONSOLA</button>
+    <button id="open-settings" class="launcher-btn">⚙️ CONFIGURACIÓN Y MANUAL</button>
+
+  </div>
+
+  <script src="../core/cloud.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
