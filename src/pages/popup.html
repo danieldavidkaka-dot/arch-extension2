@@ -6,39 +6,42 @@
     /* REGLA MAESTRA: Forzar tamaño */
     html, body {
       width: 300px !important;
-      min-height: 150px !important;
-      margin: 0; padding: 0;
+      min-height: 160px !important;
+      margin: 0; padding: 15px;
       background-color: #09090b;
       font-family: 'Segoe UI', monospace, sans-serif;
       color: #e4e4e7;
       overflow: hidden;
     }
     .header {
-      background: #000; padding: 15px; border-bottom: 1px solid #27272a;
+      margin-bottom: 15px;
       display: flex; justify-content: space-between; align-items: center;
     }
     .title { font-weight: bold; color: #10b981; font-size: 14px; }
     .version { font-size: 10px; background: #18181b; padding: 2px 6px; border-radius: 4px; color: #71717a; border: 1px solid #27272a; }
-    .content { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+    
     button {
       background: #18181b; border: 1px solid #27272a; color: #fff; padding: 12px;
       border-radius: 6px; cursor: pointer; font-family: monospace; font-size: 12px;
-      transition: all 0.2s; display: flex; align-items: center; justify-content: center; width: 100%;
+      transition: all 0.2s; display: flex; align-items: center; justify-content: center; width: 100%; margin-bottom: 10px;
     }
     button:hover { background: #27272a; border-color: #3f3f46; }
+    
+    /* Botón Verde */
     button#open-console { background: #10b981; color: #000; border: none; font-weight: bold; }
     button#open-console:hover { opacity: 0.9; }
   </style>
 </head>
 <body>
+
   <div class="header">
     <span class="title">>arch_console</span>
-    <span class="version">v16.3</span>
+    <span class="version">v16.4</span>
   </div>
-  <div class="content">
-    <button id="open-console">⚡ INJECT CONSOLE</button>
-    <button id="open-settings">⚙️ SETTINGS & MANUAL</button>
-  </div>
+  
+  <button id="open-console">⚡ ABRIR CONSOLA</button>
+  <button id="open-settings">⚙️ CONFIGURACIÓN Y MANUAL</button>
+
   <script src="popup.js"></script>
 </body>
 </html>

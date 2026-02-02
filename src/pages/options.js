@@ -1,131 +1,194 @@
-// src/pages/options.js - v15.2 Settings Manager - FULL FILE
-console.log(">arch: Options Script Loaded");
+// src/pages/options.js - v16.4 (Dynamic Renderer)
+console.log(">arch: Options v16.4 Loaded");
 
-// Esperar a que cargue el DOM para asignar eventos
-document.addEventListener('DOMContentLoaded', restoreOptions);
-document.getElementById('save').addEventListener('click', saveOptions);
-document.getElementById('reset').addEventListener('click', resetOptions);
+document.addEventListener('DOMContentLoaded', () => {
+    restoreUserOptions(); // Cargar templates del usuario
+    renderManual();       // Dibujar el manual desde library.js
+});
 
-// 1. FUNCIÓN GUARDAR (Save)
-function saveOptions() {
-    const customKey = document.getElementById('custom-key').value.trim();
-    const customContent = document.getElementById('custom-content').value;
-    const status = document.getElementById('status');
+// Event Listeners
+const btnSave = document.getElementById('save');
+const btnReset = document.getElementById('reset');
+if (btnSave) btnSave.addEventListener('click', saveOption);
+if (btnReset) btnReset.addEventListener('click', resetOptions);
 
-    // Validación básica
-    if (!customKey || !customContent) {
-        showStatus('Error: Key and Content are required.', '#ff4444');
-        return;
-    }
+// --- 1. GESTIÓN DE USUARIO (Izquierda) ---
+function saveOption() {
+    const keyInput = document.getElementById('custom-key');
+    const contentInput = document.getElementById('custom-content');
+    
+    const key = keyInput.value.trim();
+    const content = contentInput.value;
+    
+    if (!key || !content) return showStatus('Error: Rellena ambos campos', '#ff4444');
 
-    // Guardar en chrome.storage.local (Compatible con engine.js)
-    chrome.storage.local.get('arch_user_templates', (result) => {
-        let templates = result.arch_user_templates || {};
-        
-        // Agregar o Sobrescribir
-        templates[customKey] = customContent;
-
+    chrome.storage.local.get('arch_user_templates', (res) => {
+        const templates = res.arch_user_templates || {};
+        templates[key] = content;
         chrome.storage.local.set({ arch_user_templates: templates }, () => {
-            showStatus(`Saved [${customKey}] successfully!`, '#00ff9d');
-            restoreOptions(); // Refrescar la lista visual
-            
-            // Limpiar los campos de texto
-            document.getElementById('custom-key').value = '';
-            document.getElementById('custom-content').value = '';
+            showStatus(`Guardado [${key}]`, '#10b981');
+            restoreUserOptions();
+            keyInput.value = '';
+            contentInput.value = '';
         });
     });
 }
 
-// 2. FUNCIÓN LEER Y MOSTRAR (Restore)
-function restoreOptions() {
-    chrome.storage.local.get('arch_user_templates', (result) => {
-        const templates = result.arch_user_templates || {};
+function restoreUserOptions() {
+    chrome.storage.local.get('arch_user_templates', (res) => {
         const list = document.getElementById('template-list');
-        
-        // Limpiar lista actual
         list.innerHTML = '';
+        const templates = res.arch_user_templates || {};
 
-        // Si está vacío
         if (Object.keys(templates).length === 0) {
-            list.innerHTML = '<div style="color:#666; font-style:italic; padding:10px;">No custom templates found. Add one above!</div>';
+            list.innerHTML = '<div style="color:#555; font-size:12px; font-style:italic">No hay templates personalizados.</div>';
             return;
         }
 
-        // Generar elementos de la lista
-        Object.keys(templates).sort().forEach(key => {
+        Object.keys(templates).forEach(key => {
             const item = document.createElement('div');
             Object.assign(item.style, {
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                background: '#1a1a1a', padding: '12px', marginBottom: '8px',
-                border: '1px solid #333', borderRadius: '6px'
+                background: '#222', padding: '10px', marginBottom: '5px', borderRadius: '4px',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px'
             });
+            
+            const span = document.createElement('span');
+            span.textContent = key;
+            span.style.fontFamily = 'monospace';
+            span.style.color = '#fff';
 
-            // Nombre del Template
-            const name = document.createElement('span');
-            name.textContent = key;
-            name.style.color = '#00ff9d';
-            name.style.fontFamily = 'monospace';
-            name.style.fontWeight = 'bold';
+            const del = document.createElement('button');
+            del.textContent = 'x';
+            Object.assign(del.style, { width: '25px', padding: '2px', background: '#333', color: '#ff4444', marginLeft: '10px', border: 'none', cursor: 'pointer' });
+            del.onclick = () => deleteOption(key);
 
-            // Botón Borrar
-            const delBtn = document.createElement('button');
-            delBtn.textContent = 'DELETE';
-            Object.assign(delBtn.style, {
-                background: '#2a0000', color: '#ff5555', border: '1px solid #550000',
-                cursor: 'pointer', fontSize: '11px', padding: '5px 10px', borderRadius: '4px',
-                transition: '0.2s'
-            });
-
-            delBtn.onmouseover = () => delBtn.style.background = '#4a0000';
-            delBtn.onmouseout = () => delBtn.style.background = '#2a0000';
-
-            delBtn.onclick = () => {
-                deleteTemplate(key);
-            };
-
-            item.appendChild(name);
-            item.appendChild(delBtn);
+            item.appendChild(span);
+            item.appendChild(del);
             list.appendChild(item);
         });
     });
 }
 
-// 3. FUNCIÓN BORRAR (Delete)
-function deleteTemplate(key) {
-    // Confirmación simple
-    if(!confirm(`Are you sure you want to delete [${key}]?`)) return;
-
-    chrome.storage.local.get('arch_user_templates', (result) => {
-        let templates = result.arch_user_templates || {};
-        delete templates[key]; // Eliminar del objeto
-        
-        chrome.storage.local.set({ arch_user_templates: templates }, () => {
-            restoreOptions(); // Refrescar lista
-            showStatus(`Deleted [${key}]`, '#ffaa00');
+function deleteOption(key) {
+    if (!confirm(`¿Borrar ${key}?`)) return;
+    chrome.storage.local.get('arch_user_templates', (res) => {
+        const t = res.arch_user_templates || {};
+        delete t[key];
+        chrome.storage.local.set({ arch_user_templates: t }, () => {
+            restoreUserOptions();
+            showStatus(`Borrado [${key}]`, '#eab308');
         });
     });
 }
 
-// 4. RESET TOTAL (Danger Zone)
 function resetOptions() {
-    if(confirm("WARNING: This will delete ALL your custom templates.\n\nAre you sure?")) {
+    if (confirm("ADVERTENCIA: ¿Seguro que quieres borrar TODOS tus templates personalizados?")) {
         chrome.storage.local.remove('arch_user_templates', () => {
-            restoreOptions();
-            showStatus('All custom templates deleted.', '#ff4444');
+            restoreUserOptions();
+            showStatus('Reset completado', '#ff4444');
         });
     }
 }
 
-// Helper para mensajes de estado
-function showStatus(text, color) {
-    const status = document.getElementById('status');
-    status.textContent = text;
-    status.style.color = color;
-    status.style.opacity = '1';
+function showStatus(msg, color) {
+    const el = document.getElementById('status');
+    el.textContent = msg;
+    el.style.color = color;
+    setTimeout(() => el.textContent = '', 3000);
+}
+
+// --- 2. RENDERIZADO DEL MANUAL (Derecha) ---
+function renderManual() {
+    const container = document.getElementById('manual-container');
     
-    // Desvanecer después de 3 segundos
-    setTimeout(() => { 
-        status.style.opacity = '0';
-        setTimeout(() => { status.textContent = ''; }, 500);
-    }, 3000);
+    // Verificación de seguridad por si library.js no cargó
+    if (!window.ARCH_LIBRARY) {
+        container.innerHTML = "<div style='color:red; padding:20px; border:1px solid red'>Error crítico: library.js no se ha cargado. Revisa la consola.</div>";
+        return;
+    }
+
+    // Limpiar contenedor
+    container.innerHTML = '';
+
+    // Agrupar por categorías (Heurística simple basada en prefijos)
+    const categories = {
+        'ENGINEERING CORE': ['DEV', 'DB_', 'FIX', 'UNIT_', 'LOGIC', 'R1_', 'DOC_'],
+        'AGENTS & STRATEGY': ['AI_', 'SWARM', 'BLUEPRINT', 'TRUTH', 'REC_ADVISOR'],
+        'VISUAL & SPATIAL': ['ARCH_', 'SKETCH', 'UI', 'VISION', 'DATA'],
+        'AUTOMATION & WORKFLOWS': ['REC_SCREEN', 'CHAIN_', 'LAM_', 'FLOW']
+    };
+
+    const usedKeys = new Set();
+
+    for (const [catName, prefixes] of Object.entries(categories)) {
+        // Título de categoría
+        const h3 = document.createElement('h3');
+        h3.textContent = catName;
+        container.appendChild(h3);
+
+        const grid = document.createElement('div');
+        grid.className = 'mode-grid';
+
+        // Buscar prompts que coincidan con los prefijos
+        let foundAny = false;
+        Object.entries(window.ARCH_LIBRARY).forEach(([key, prompt]) => {
+            if (usedKeys.has(key)) return; // Ya mostrado
+
+            if (prefixes.some(p => key.startsWith(p))) {
+                usedKeys.add(key);
+                const card = createCard(key, prompt);
+                grid.appendChild(card);
+                foundAny = true;
+            }
+        });
+
+        if (!foundAny) {
+            const empty = document.createElement('div');
+            empty.textContent = "No modes found in this category.";
+            empty.style.color = "#444";
+            empty.style.fontSize = "10px";
+            grid.appendChild(empty);
+        }
+
+        container.appendChild(grid);
+    }
+
+    // Otros (Fallback para cualquier llave nueva que no esté categorizada)
+    const remaining = Object.keys(window.ARCH_LIBRARY).filter(k => !usedKeys.has(k));
+    if (remaining.length > 0) {
+        const h3 = document.createElement('h3');
+        h3.textContent = "OTROS / MISCELLANEOUS";
+        container.appendChild(h3);
+        const grid = document.createElement('div');
+        grid.className = 'mode-grid';
+        remaining.forEach(key => grid.appendChild(createCard(key, window.ARCH_LIBRARY[key])));
+        container.appendChild(grid);
+    }
+}
+
+function createCard(key, prompt) {
+    const card = document.createElement('div');
+    card.className = 'mode-card';
+    
+    // Extraer rol o descripción breve del prompt usando Regex
+    // Busca "> ROLE: ..." o toma una descripción genérica
+    const roleMatch = prompt.match(/> ROLE: (.*?)(\n|$)/);
+    const desc = roleMatch ? roleMatch[1].trim() : "Prompt especializado del sistema >arch.";
+
+    card.innerHTML = `
+        <div class="mode-header">
+            <span class="mode-name">${key}</span>
+        </div>
+        <div class="mode-desc">${desc.substring(0, 85)}${desc.length > 85 ? '...' : ''}</div>
+    `;
+    
+    // Opcional: Al hacer click podría copiar el nombre al portapapeles
+    card.onclick = () => {
+        navigator.clipboard.writeText(key);
+        showStatus(`Copiado: ${key}`, '#10b981');
+    };
+    card.title = "Click para copiar nombre";
+    card.style.cursor = "pointer";
+
+    return card;
 }

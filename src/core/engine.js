@@ -1,25 +1,31 @@
-// src/core/engine.js - v14.1 (Bulletproof Logic) - FULL FILE
-console.log(">arch: Engine v14.1 Loaded");
+// src/core/engine.js - v16.4 (Documented & Type-Safe)
+console.log(">arch: Engine v16.4 Loaded");
 
 window.TemplateManager = {
-    // --- 1. GESTIÓN DE DATOS ---
+    /**
+     * Recupera todos los templates (Librería Base + Usuario).
+     * @returns {Promise<Object>} Objeto con todos los prompts (Clave: Contenido).
+     */
     getAll: async function() {
-        return new Promise((resolve) => {
-            const defaults = window.ARCH_LIBRARY || {};
-            // Intentamos leer del almacenamiento local
-            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-                chrome.storage.local.get('arch_user_templates', (result) => {
-                    const custom = result.arch_user_templates || {};
-                    // Fusionamos (Custom sobrescribe Default)
-                    resolve({ ...defaults, ...custom });
-                });
-            } else {
-                // Fallback seguro si la API de Chrome no está lista
-                resolve(defaults);
-            }
-        });
+        const defaults = window.ARCH_LIBRARY || {};
+        // Verificar si la API de Chrome está disponible (contexto de extensión)
+        if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+            // Uso de API moderna basada en Promesas (Manifest V3)
+            const result = await chrome.storage.local.get('arch_user_templates');
+            const custom = result.arch_user_templates || {};
+            return { ...defaults, ...custom };
+        } else {
+            // Fallback para entornos de desarrollo sin API de Chrome
+            return defaults;
+        }
     },
 
+    /**
+     * Guarda un template personalizado del usuario.
+     * @param {string} key - El nombre del comando (ej: "MI_PROMPT").
+     * @param {string} content - El contenido del prompt.
+     * @returns {Promise<void>}
+     */
     save: async function(key, content) {
         if (!chrome.storage) return;
         const result = await chrome.storage.local.get('arch_user_templates');
@@ -29,49 +35,65 @@ window.TemplateManager = {
         console.log(`>arch: Saved [${key}]`);
     },
 
+    /**
+     * Elimina un template personalizado.
+     * @param {string} key - El nombre del comando a borrar.
+     * @returns {Promise<void>}
+     */
     delete: async function(key) {
         if (!chrome.storage) return;
         const result = await chrome.storage.local.get('arch_user_templates');
-        const custom = result.arch_user_templates || {};
+        let custom = result.arch_user_templates || {};
         delete custom[key];
         await chrome.storage.local.set({ arch_user_templates: custom });
         console.log(`>arch: Deleted [${key}]`);
     },
 
-    // --- 2. HERRAMIENTAS DE VARIABLES (BLINDADAS) ---
-    // Esta función incluye protección try-catch para que nunca rompa la interfaz
+    /**
+     * Analiza un texto buscando variables {{VAR:...}}.
+     * @param {string} str - El texto crudo.
+     * @returns {Array<Object>} Lista de variables encontradas.
+     */
     parseVariables: function(str) {
-        if (!str || typeof str !== 'string') return []; 
+        if (!str || typeof str !== 'string') return [];
         try {
             const regex = /{{VAR:(.*?)}}/g;
             const matches = [...str.matchAll(regex)];
             return matches.map(m => {
-                const inner = m[1];
+                const inner = m[1]; // Contenido: "Nombre:Op1,Op2"
                 const parts = inner.split(':');
                 return {
                     raw: m[0],
-                    key: parts[0] || "Variable",
-                    options: parts[1] ? parts[1].split(',') : null
+                    key: parts[0] ? parts[0].trim() : "Variable",
+                    options: parts[1] ? parts[1].split(',').map(o => o.trim()) : null
                 };
             });
         } catch (e) {
-            console.error(">arch error: Failed to parse variables", e);
-            return []; // Retorna vacío en vez de error para seguir funcionando
+            console.error(">arch error: Variable parsing failed", e);
+            return [];
         }
     },
 
-    compileVariables: function(str, values) {
+    /**
+     * Reemplaza variables en el texto con valores reales.
+     * Útil para procesamiento backend o validación previa.
+     */
+    compileVariables: function(str, valuesMap) {
         if (!str) return "";
         let output = str;
         try {
-            for (const [key, val] of Object.entries(values)) {
-                // Regex escapado para asegurar coincidencia exacta
-                const regex = new RegExp(`{{VAR:${key}(:.*?)?}}`, 'g');
+            // Función auxiliar para escapar caracteres especiales de Regex
+            const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            for (const [key, val] of Object.entries(valuesMap)) {
+                // Crea una regex dinámica para reemplazar {{VAR:key...}}
+                // FIX DE SEGURIDAD: Escapar la key para evitar errores de sintaxis o inyección
+                const regex = new RegExp(`{{VAR:${escapeRegExp(key)}(:.*?)?}}`, 'g');
                 output = output.replace(regex, val || "");
             }
+            return output;
         } catch (e) {
-            console.error(">arch error: Failed to compile variables", e);
+            console.error(">arch error: Compilation failed", e);
+            return str;
         }
-        return output;
     }
 };

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": ">arch extension",
-  "version": "16.0",
+  "version": "16.4",
   "description": "The AI Architecture Console. Gold Edition.",
   "permissions": [
     "storage",
@@ -26,9 +26,7 @@
   "options_page": "src/pages/options.html",
   "content_scripts": [
     {
-      "matches": [
-        "<all_urls>"
-      ],
+      "matches": ["<all_urls>"],
       "js": [
         "src/core/library.js",
         "src/core/engine.js",
@@ -39,6 +37,12 @@
       "run_at": "document_end"
     }
   ],
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/*", "src/*"],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "commands": {
     "toggle-arch-console": {
       "suggested_key": {
@@ -47,21 +51,5 @@
       },
       "description": "Open >arch Console"
     }
-  },
-  "icons": {
-    "16": "assets/icons/icon16.png",
-    "48": "assets/icons/icon48.png",
-    "128": "assets/icons/icon128.png"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "assets/*",
-        "src/*"
-      ],
-      "matches": [
-        "<all_urls>"
-      ]
-    }
-  ]
+  }
 }

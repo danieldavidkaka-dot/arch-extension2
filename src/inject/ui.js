@@ -1,5 +1,5 @@
-// src/inject/ui.js - v16.3 (Professional Wide UI)
-console.log(">arch: UI v16.3 (Wide Edition) Loaded");
+// src/inject/ui.js - v16.4 (Wide UI + Spanish Texts)
+console.log(">arch: UI v16.4 Loaded");
 
 window.ArchUI = {
     overlay: null,
@@ -7,12 +7,12 @@ window.ArchUI = {
     variables: {},
     onSubmit: null,
 
-    // 1. CREAR PANEL (Diseño Ancho)
+    // 1. CREAR PANEL
     create: function(templates, submitCallback) {
         this.onSubmit = submitCallback;
         if (this.overlay) this.close();
 
-        // Backdrop (Fondo borroso)
+        // Backdrop
         this.backdrop = document.createElement('div');
         Object.assign(this.backdrop.style, {
             position: 'fixed', top: '0', left: '0', width: '100%', height: '100%',
@@ -20,21 +20,17 @@ window.ArchUI = {
             zIndex: '2147483646', opacity: '0', transition: 'opacity 0.2s'
         });
 
-        // Panel Principal (WIDE MODE)
+        // Panel
         this.overlay = document.createElement('div');
         this.overlay.id = 'arch-overlay';
         Object.assign(this.overlay.style, {
             position: 'fixed', 
             top: '50%', left: '50%', 
             transform: 'translate(-50%, -50%) scale(0.95)',
-            width: '92%',             // Ocupa casi toda la pantalla
-            maxWidth: '1000px',        // Límite para monitores grandes
-            minHeight: '600px',       // Altura generosa
-            maxHeight: '90vh',
-            background: '#09090b', 
-            color: '#e4e4e7',
-            border: '1px solid #27272a', 
-            borderRadius: '16px',
+            width: '92%', maxWidth: '1000px', // Ancho Profesional
+            minHeight: '600px', maxHeight: '90vh',
+            background: '#09090b', color: '#e4e4e7',
+            border: '1px solid #27272a', borderRadius: '16px',
             boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
             fontFamily: 'Segoe UI, system-ui, sans-serif',
             zIndex: '2147483647',
@@ -55,37 +51,36 @@ window.ArchUI = {
         this.renderMainMenu(templates);
     },
 
-    // 2. MENÚ PRINCIPAL (Grid Espacioso)
+    // 2. MENÚ PRINCIPAL
     renderMainMenu: function(templates) {
         this.overlay.innerHTML = '';
         this.variables = {};
         this.currentTemplate = null;
 
-        // Header
+        // HEADER (Traducido)
         const header = document.createElement('div');
         Object.assign(header.style, {
             padding: '25px 35px', borderBottom: '1px solid #27272a', background: '#000',
             display: 'flex', justifyContent: 'space-between', alignItems: 'center'
         });
         header.innerHTML = `
-            <div style="font-size:18px; font-weight:700; color:#10b981;">>_ Select Mode</div>
-            <div style="font-size:12px; color:#71717a; cursor:pointer;" onclick="window.ArchUI.close()">[ESC] Close</div>
+            <div style="font-size:18px; font-weight:700; color:#10b981;">>_ Seleccionar Modo</div>
+            <div style="font-size:12px; color:#71717a; cursor:pointer;" onclick="window.ArchUI.close()">[ESC] Cerrar</div>
         `;
 
-        // Grid
+        // GRID
         const grid = document.createElement('div');
         Object.assign(grid.style, {
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
             gap: '15px', padding: '35px', overflowY: 'auto', flex: '1'
         });
 
-        // Categorías Inteligentes
+        // CATEGORÍAS
         const categories = {
-            'ENGINEERING': ['DEV', 'FIX', 'DB_', 'LOGIC', 'R1_'],
-            'AGENTS & STRATEGY': ['AI_', 'SWARM', 'BLUEPRINT', 'TRUTH', 'REC_'],
-            'VISUAL & DATA': ['ARCH_', 'UI', 'SKETCH', 'VISION', 'DATA'],
-            'AUTOMATION': ['REC_', 'CHAIN_', 'LAM_', 'FLOW']
+            'INGENIERÍA': ['DEV', 'FIX', 'DB_', 'LOGIC', 'R1_', 'DOC_'],
+            'AGENTES Y ESTRATEGIA': ['AI_', 'SWARM', 'BLUEPRINT', 'TRUTH', 'REC_'],
+            'VISUAL Y DISEÑO': ['ARCH_', 'UI', 'SKETCH', 'VISION', 'DATA'],
+            'AUTOMATIZACIÓN': ['REC_', 'CHAIN_', 'LAM_', 'FLOW']
         };
 
         for (const [catName, prefixes] of Object.entries(categories)) {
@@ -138,7 +133,7 @@ window.ArchUI = {
         else this.submit();
     },
 
-    // 4. FORMULARIO (Inputs Grandes)
+    // 4. FORMULARIO (Traducido)
     renderForm: function(key) {
         this.overlay.innerHTML = '';
 
@@ -147,10 +142,20 @@ window.ArchUI = {
             padding: '25px 35px', borderBottom: '1px solid #27272a', background:'#000',
             display:'flex', alignItems:'center', gap:'10px'
         });
-        header.innerHTML = `
-            <div style="cursor:pointer; color:#71717a;" onclick="window.ArchUI.renderMainMenu(window.TemplateManager.cache || {})">← Back</div>
-            <div style="font-size:18px; font-weight:700; color:#10b981;">CONFIG: ${key}</div>
-        `;
+
+        // FIX SEGURIDAD: Usar DOM API en lugar de innerHTML para evitar XSS
+        // FIX LÓGICA: Manejar la promesa de getAll() correctamente
+        const backBtn = document.createElement('div');
+        backBtn.textContent = '← Atrás';
+        Object.assign(backBtn.style, { cursor: 'pointer', color: '#71717a' });
+        backBtn.onclick = async () => this.renderMainMenu(await window.TemplateManager.getAll());
+
+        const title = document.createElement('div');
+        title.textContent = `CONFIGURAR: ${key}`;
+        Object.assign(title.style, { fontSize: '18px', fontWeight: '700', color: '#10b981' });
+
+        header.appendChild(backBtn);
+        header.appendChild(title);
 
         const formContainer = document.createElement('div');
         Object.assign(formContainer.style, { padding: '40px', overflowY: 'auto', flex: '1', display: 'flex', flexDirection: 'column', gap: '25px' });
@@ -158,7 +163,7 @@ window.ArchUI = {
         for (const [name, data] of Object.entries(this.variables)) {
             const wrapper = document.createElement('div');
             const label = document.createElement('label');
-            label.textContent = name;
+            label.textContent = name; // Mantiene el nombre de la variable
             Object.assign(label.style, { display: 'block', marginBottom: '10px', fontWeight: '600', fontSize: '14px', color: '#a1a1aa' });
 
             let input;
@@ -173,7 +178,7 @@ window.ArchUI = {
             } else {
                 if (name === 'INPUT' || name === 'CODE' || name.includes('Context')) {
                     input = document.createElement('textarea');
-                    input.style.height = '180px'; // Textarea ALTO
+                    input.style.height = '180px'; 
                     input.style.resize = 'vertical';
                 } else {
                     input = document.createElement('input');
@@ -198,7 +203,7 @@ window.ArchUI = {
         }
 
         const btn = document.createElement('button');
-        btn.textContent = 'INITIALIZE >';
+        btn.textContent = 'INICIALIZAR >';
         Object.assign(btn.style, {
             padding: '18px', background: '#10b981', color: '#000', border: 'none',
             borderRadius: '8px', fontWeight: 'bold', fontSize: '16px', cursor: 'pointer', marginTop: '20px'
