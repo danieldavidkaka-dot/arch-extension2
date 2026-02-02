@@ -1,133 +1,105 @@
-// src/inject/content.js - v12.0 Logic Glue & Shadow Recorder
-console.log(">arch: Content Script Loaded v12.0");
+// src/inject/content.js - v15.2 Platinum (Smart Trigger & Floating Button)
+console.log(">arch: Controller v15.2 Loaded");
 
-// =============================================================================
-// 1. SHADOW RECORDER (El Grabador Invisible)
-// =============================================================================
-window.ShadowRecorder = {
-    isRecording: false,
-    logs: [],
-    listeners: {},
+// 1. ESCUCHAR ATAJOS DE TECLADO
+// Mensajes del Background (Ctrl+Shift+Y)
+chrome.runtime.onMessage.addListener((req) => {
+    if (req.action === "toggle_console") toggleConsole();
+});
 
-    start: function() {
-        if (this.isRecording) return;
-        this.isRecording = true;
-        this.logs = [];
-        console.log(">arch: 🔴 Shadow Recorder STARTED");
-
-        // Definir listeners
-        this.listeners.click = (e) => {
-            const el = e.target;
-            const id = el.id ? `#${el.id}` : '';
-            const cls = el.className ? `.${el.className.split(' ').join('.')}` : '';
-            // Capturar texto corto para contexto
-            const text = el.innerText ? `"${el.innerText.substring(0, 20).replace(/\n/g, ' ')}..."` : '';
-            this.record(`[CLICK] ${el.tagName}${id}${cls} ${text}`);
-        };
-
-        this.listeners.input = (e) => {
-            // No grabamos contraseñas por seguridad
-            if (e.target.type === 'password') return;
-            this.record(`[TYPE] ${e.target.tagName} => "${e.target.value}"`);
-        };
-
-        this.listeners.scroll = () => {
-            if (!this.scrolling) {
-                this.record(`[SCROLL] User scrolled the page`);
-                this.scrolling = true;
-                setTimeout(() => this.scrolling = false, 1000);
-            }
-        };
-
-        // Activar listeners
-        document.addEventListener('click', this.listeners.click, true);
-        document.addEventListener('input', this.listeners.input, true);
-        document.addEventListener('scroll', this.listeners.scroll, true);
-    },
-
-    stop: function() {
-        if (!this.isRecording) return "";
-        this.isRecording = false;
-        console.log(">arch: ⏹️ Shadow Recorder STOPPED");
-
-        document.removeEventListener('click', this.listeners.click, true);
-        document.removeEventListener('input', this.listeners.input, true);
-        document.removeEventListener('scroll', this.listeners.scroll, true);
-
-        return this.logs.join('\n');
-    },
-
-    record: function(action) {
-        const time = new Date().toLocaleTimeString();
-        this.logs.push(`[${time}] ${action}`);
-    }
-};
-
-// =============================================================================
-// 2. TECLADO & INYECCIÓN
-// =============================================================================
-let lastKeyTime = 0;
-
-// Función central para copiar al portapapeles
-function handleSelection(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        console.log(">arch: Prompt copied!");
-        
-        // Feedback visual (Toast)
-        const toast = document.createElement('div');
-        toast.textContent = "COPIED TO CLIPBOARD!";
-        Object.assign(toast.style, {
-            position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
-            background: '#00ff9d', color: '#000', padding: '10px 20px',
-            borderRadius: '4px', fontWeight: 'bold', zIndex: '2147483647',
-            fontFamily: 'Courier New', boxShadow: '0 0 10px rgba(0,0,0,0.5)'
-        });
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 2000);
-    });
-}
-
-// Listener de Teclado (Shift + >)
-document.addEventListener('keydown', async (e) => {
+// Tecla flotante ">" (Legacy) - CORREGIDO PARA CHATGPT/CLAUDE
+document.addEventListener('keydown', (e) => {
+    // Si la tecla es '>'...
     if (e.key === '>') {
-        const now = Date.now();
-        if (now - lastKeyTime < 500) return; // Debounce
-        lastKeyTime = now;
-
-        // Si el UI ya existe, solo lo mostramos, si no, lo recreamos (seguridad)
-        if (window.ArchUI && window.ArchUI.overlay) {
-             window.ArchUI.overlay.style.display = 'flex';
-        } else {
-             // Fallback por si acaso
-             const templates = await window.TemplateManager.getAll();
-             window.ArchUI.create(templates, handleSelection);
-             window.ArchUI.overlay.style.display = 'flex';
+        const tag = e.target.tagName;
+        const isEditable = e.target.isContentEditable;
+        
+        // ...y NO estamos escribiendo en un campo de texto (Input, Textarea o Div Editable)
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA' && !isEditable) {
+            toggleConsole();
         }
     }
 });
 
-// =============================================================================
-// 3. AUTO-INICIO (¡IMPORTANTE!)
-// =============================================================================
-(async function init() {
-    try {
-        // Esperamos un momento para asegurar que el DOM esté listo
-        setTimeout(async () => {
-            // 1. Iniciar UI Flotante
-            if (window.TemplateManager && window.ArchUI) {
-                const templates = await window.TemplateManager.getAll();
-                window.ArchUI.create(templates, handleSelection);
-                console.log(">arch: Floating UI Initialized");
-            }
-
-            // 2. Iniciar Snatcher (El botón de descarga) <-- ¡ESTO FALTABA!
-            if (window.ArchSnatcher) {
-                window.ArchSnatcher.init();
-                console.log(">arch: Snatcher Module Active");
-            }
-            
-        }, 500);
-    } catch (e) {
-        console.error(">arch: Initialization failed", e);
+// 2. FUNCIÓN PRINCIPAL: ABRIR/CERRAR CONSOLA
+function toggleConsole() {
+    if (!window.ArchUI) {
+        console.error(">arch: UI module missing");
+        return;
     }
+    
+    // Si ya está abierto, cerrarlo
+    if (window.ArchUI.overlay && document.contains(window.ArchUI.overlay)) {
+        window.ArchUI.close();
+    } else {
+        // Cargar templates y abrir UI
+        window.TemplateManager.getAll()
+            .then(allTemplates => {
+                window.ArchUI.create(allTemplates, (finalText) => {
+                    // Inyección segura
+                    if (window.ArchSnatcher) {
+                        window.ArchSnatcher.inject(finalText);
+                    } else {
+                        console.warn(">arch: Snatcher missing, using clipboard");
+                        navigator.clipboard.writeText(finalText);
+                    }
+                });
+            })
+            .catch(err => console.error(">arch: Failed to load templates", err));
+    }
+}
+
+// 3. BOTÓN FLOTANTE (Mantenemos el diseño v14.2 que funcionaba bien)
+function createFloatingButton() {
+    if (document.getElementById('arch-floating-btn')) return;
+
+    const btn = document.createElement('div');
+    btn.id = 'arch-floating-btn';
+    btn.textContent = '>_';
+    
+    Object.assign(btn.style, {
+        position: 'fixed', bottom: '30px', right: '30px',
+        width: '45px', height: '45px',
+        background: '#09090b', color: '#10b981', // Colores ajustados al tema v15
+        borderRadius: '50%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', zIndex: '2147483647', // Max Z-Index
+        fontFamily: 'monospace', fontWeight: 'bold', fontSize: '16px',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.6)',
+        border: '1px solid #27272a',
+        transition: 'all 0.2s ease',
+        userSelect: 'none'
+    });
+
+    btn.onmouseover = () => { 
+        btn.style.transform = 'scale(1.1)'; 
+        btn.style.borderColor = '#10b981';
+        btn.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.4)';
+    };
+    btn.onmouseout = () => { 
+        btn.style.transform = 'scale(1)'; 
+        btn.style.borderColor = '#27272a';
+        btn.style.boxShadow = '0 4px 15px rgba(0,0,0,0.6)';
+    };
+
+    btn.onclick = (e) => {
+        e.stopPropagation();
+        toggleConsole();
+    };
+
+    document.body.appendChild(btn);
+    console.log(">arch: Floating button active");
+}
+
+// 4. AUTO-INIT
+(async function init() {
+    // Check recursivo suave para asegurar carga
+    const checkModules = () => {
+        if (window.TemplateManager && window.ArchUI) {
+            createFloatingButton();
+        } else {
+            setTimeout(checkModules, 500);
+        }
+    };
+    checkModules();
 })();

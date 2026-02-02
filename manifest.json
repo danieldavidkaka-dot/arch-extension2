@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": ">arch extension",
-  "version": "13.0",
-  "description": "The AI Architecture Console. Press >_ to inject engineering prompts.",
+  "version": "15.2",
+  "description": "The AI Architecture Console. Platinum Edition.",
   "permissions": [
     "storage",
     "activeTab",
@@ -12,6 +12,9 @@
   "host_permissions": [
     "<all_urls>"
   ],
+  "background": {
+    "service_worker": "src/background.js"
+  },
   "action": {
     "default_popup": "src/pages/popup.html",
     "default_icon": {
@@ -40,6 +43,15 @@
       "run_at": "document_end"
     }
   ],
+  "commands": {
+    "toggle-arch-console": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Y",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "Open >arch Console"
+    }
+  },
   "icons": {
     "16": "assets/icons/icon16.png",
     "48": "assets/icons/icon48.png",
@@ -48,8 +60,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "assets/styles/core.css",
-        "assets/styles/modules.css"
+        "assets/*",
+        "src/*"
       ],
       "matches": [
         "<all_urls>"

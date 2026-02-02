@@ -1,313 +1,211 @@
-// src/inject/ui.js - UI Module v11.0 (Grid + Vars + Canvas + Shadow)
-console.log(">arch: UI Module Loaded v11.0");
+// src/inject/ui.js - v15.0 (Visual Forms & Focus Recovery)
+console.log(">arch: UI v15.0 Loaded (Visual Forms)");
 
 window.ArchUI = {
     overlay: null,
-    modal: null,
-    container: null, 
-    headerTitle: null,
-    
+    panel: null,
+
     create: function(templates, onSelectCallback) {
-        this.cleanup();
+        if (document.getElementById('arch-overlay')) return;
 
-        // 1. Estructura Base (Overlay + Modal)
-        this.overlay = document.createElement('div');
-        this.overlay.className = 'arch-modal-overlay';
-        this.overlay.style.display = 'none';
+        const userSelection = window.getSelection().toString();
 
-        this.modal = document.createElement('div');
-        this.modal.className = 'arch-modal';
+        // 1. Overlay (Fondo)
+        const overlay = document.createElement('div');
+        overlay.id = 'arch-overlay';
+        Object.assign(overlay.style, {
+            position: 'fixed', top: '0', left: '0', width: '100vw', height: '100vh',
+            background: 'rgba(0,0,0,0.85)', zIndex: '2147483647',
+            display: 'flex', justifyContent: 'center', alignItems: 'center',
+            backdropFilter: 'blur(5px)'
+        });
 
-        // 2. Header
+        // 2. Panel Principal
+        const panel = document.createElement('div');
+        Object.assign(panel.style, {
+            background: '#09090b', width: '550px', maxHeight: '85vh',
+            border: '1px solid #27272a', borderRadius: '12px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.9)',
+            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace'
+        });
+        this.panel = panel;
+
+        // Header
         const header = document.createElement('div');
-        header.className = 'arch-modal-header';
+        header.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:#10b981; font-weight:700; letter-spacing:-0.5px;">>arch_console</span>
+                <span style="font-size:10px; color:#52525b; border:1px solid #27272a; padding:2px 6px; borderRadius:4px;">v15.0</span>
+            </div>
+        `;
+        Object.assign(header.style, {
+            padding: '16px 20px', borderBottom: '1px solid #27272a', background: '#09090b'
+        });
+
+        // Contenedor de Lista (Vista 1)
+        const listContainer = document.createElement('div');
+        Object.assign(listContainer.style, { overflowY: 'auto', padding: '8px', flex: '1' });
+
+        // Contenedor de Formulario (Vista 2 - Oculta inicialmente)
+        const formContainer = document.createElement('div');
+        Object.assign(formContainer.style, { 
+            padding: '20px', flex: '1', display: 'none', flexDirection: 'column', gap: '15px' 
+        });
+
+        // --- LÓGICA DE NAVEGACIÓN ---
         
-        this.headerTitle = document.createElement('span');
-        this.headerTitle.className = 'arch-title';
-        this.headerTitle.textContent = '>arch_console // v11.0';
-        
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'arch-close-btn';
-        closeBtn.innerHTML = '&times;';
-        closeBtn.onclick = () => this.close();
-
-        header.appendChild(this.headerTitle);
-        header.appendChild(closeBtn);
-
-        // 3. Contenedor Dinámico
-        this.container = document.createElement('div');
-        // Renderizamos el Grid inicial
-        this.renderGrid(templates, onSelectCallback);
-
-        this.modal.appendChild(header);
-        this.modal.appendChild(this.container);
-        this.overlay.appendChild(this.modal);
-        document.body.appendChild(this.overlay);
-
-        // 4. Trigger Button (El botón flotante >_)
-        const trigger = document.createElement('div');
-        trigger.className = 'arch-trigger';
-        trigger.textContent = '>_';
-        trigger.onclick = () => {
-            this.overlay.style.display = 'flex';
-            this.renderGrid(templates, onSelectCallback);
-        };
-        document.body.appendChild(trigger);
-    },
-
-    // =========================================================================
-    // 1. MODO GRID (SELECTOR PRINCIPAL)
-    // =========================================================================
-    renderGrid: function(templates, onSelect) {
-        this.container.innerHTML = '';
-        this.container.className = 'arch-grid';
-        this.headerTitle.textContent = '>arch_console // Select Mode';
-
-        // --- A. Botón Especial: RECORD CONTEXT (Shadow Mode) ---
-        const recBtn = document.createElement('div');
-        recBtn.className = 'arch-btn arch-btn-rec'; // Clase especial roja
-        recBtn.innerHTML = '🔴 REC CONTEXT';
-        recBtn.onclick = () => {
-            this.startShadowMode(templates, onSelect);
-        };
-        this.container.appendChild(recBtn);
-
-        // --- B. Botones Normales (Templates) ---
-        Object.entries(templates).forEach(([key, templateContent]) => {
+        // Generar lista de botones
+        Object.keys(templates).sort().forEach(key => {
             const btn = document.createElement('div');
-            btn.className = 'arch-btn';
-            btn.textContent = key;
-            
-            btn.onclick = () => {
-                // DETECCIÓN 1: MODO CANVAS
-                if (key === 'SKETCH_TO_UI') {
-                    this.renderCanvas(key, templateContent, onSelect);
-                    return;
-                }
+            btn.innerHTML = `<span style="color:#e4e4e7;">${key}</span>`;
+            Object.assign(btn.style, {
+                padding: '12px 16px', cursor: 'pointer', borderRadius: '6px',
+                fontSize: '13px', transition: 'all 0.15s ease',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+            });
 
-                // DETECCIÓN 2: VARIABLES VIVAS
-                const vars = window.TemplateManager.parseVariables(templateContent);
-                if (vars.length > 0) {
-                    this.renderForm(key, templateContent, vars, onSelect);
+            btn.onmouseover = () => { btn.style.background = '#18181b'; };
+            btn.onmouseout = () => { btn.style.background = 'transparent'; };
+
+            btn.onclick = () => {
+                let rawContent = templates[key];
+                // Inyectar selección inicial si existe
+                rawContent = rawContent.replace('{{INPUT}}', userSelection);
+
+                // Detectar variables
+                if (window.TemplateManager && typeof window.TemplateManager.parseVariables === 'function') {
+                    const vars = window.TemplateManager.parseVariables(rawContent);
+                    
+                    if (vars.length > 0) {
+                        // MODO FORMULARIO (Los "Cuadros" que recordabas)
+                        showForm(key, vars, rawContent);
+                    } else {
+                        // MODO DIRECTO
+                        finish(rawContent);
+                    }
                 } else {
-                    // DETECCIÓN 3: INYECCIÓN DIRECTA
-                    onSelect(templateContent); 
-                    this.close();
+                    finish(rawContent);
                 }
             };
-            this.container.appendChild(btn);
-        });
-    },
-
-    // =========================================================================
-    // 2. MODO FORMULARIO (VARIABLES VIVAS)
-    // =========================================================================
-    renderForm: function(modeKey, templateContent, variables, onSelect) {
-        this.container.innerHTML = '';
-        this.container.className = 'arch-form-container';
-        this.headerTitle.textContent = `>_ CONFIG: ${modeKey}`;
-
-        const inputsMap = {}; 
-
-        variables.forEach(v => {
-            const group = document.createElement('div');
-            group.className = 'arch-form-group';
-            const label = document.createElement('label');
-            label.className = 'arch-label';
-            label.textContent = v.key;
-
-            let inputEl;
-            if (v.options) {
-                // Dropdown
-                inputEl = document.createElement('select');
-                inputEl.className = 'arch-select';
-                v.options.forEach(opt => {
-                    const option = document.createElement('option');
-                    option.value = opt;
-                    option.textContent = opt;
-                    inputEl.appendChild(option);
-                });
-            } else {
-                // Texto Libre
-                inputEl = document.createElement('input');
-                inputEl.type = 'text';
-                inputEl.className = 'arch-input';
-                inputEl.placeholder = `Enter ${v.key}...`;
-                // Autofocus
-                if (Object.keys(inputsMap).length === 0) setTimeout(() => inputEl.focus(), 100);
-            }
-            inputsMap[v.key] = inputEl;
-            group.appendChild(label);
-            group.appendChild(inputEl);
-            this.container.appendChild(group);
+            listContainer.appendChild(btn);
         });
 
-        // Botones de Acción (Back / Run)
-        const actions = document.createElement('div');
-        actions.className = 'arch-form-actions';
-        
-        const backBtn = document.createElement('button');
-        backBtn.className = 'arch-btn-back';
-        backBtn.textContent = '<< BACK';
-        backBtn.onclick = () => window.TemplateManager.getAll().then(tpls => this.renderGrid(tpls, onSelect));
+        // Función para mostrar el Formulario Visual
+        const showForm = (templateName, vars, contentTemplate) => {
+            listContainer.style.display = 'none';
+            formContainer.style.display = 'flex';
+            formContainer.innerHTML = ''; // Limpiar previo
 
-        const runBtn = document.createElement('button');
-        runBtn.className = 'arch-btn-run';
-        runBtn.textContent = 'RUN >>';
-        runBtn.onclick = () => {
-            const values = {};
-            for (const [key, el] of Object.entries(inputsMap)) values[key] = el.value;
-            
-            // Compilar Variables
-            const filledTemplate = window.TemplateManager.compileVariables(templateContent, values);
-            onSelect(filledTemplate);
-            this.close();
-        };
+            // Título del form
+            const title = document.createElement('div');
+            title.innerHTML = `<span style="color:#71717a">Setup:</span> <span style="color:#fff">${templateName}</span>`;
+            title.style.marginBottom = '10px';
+            title.style.fontSize = '14px';
+            formContainer.appendChild(title);
 
-        this.container.onkeydown = (e) => { if(e.key === 'Enter') runBtn.click(); };
-        actions.appendChild(backBtn);
-        actions.appendChild(runBtn);
-        this.container.appendChild(actions);
-    },
+            const inputValues = {};
 
-    // =========================================================================
-    // 3. MODO CANVAS (PIZARRA DE DIBUJO)
-    // =========================================================================
-    renderCanvas: function(modeKey, templateContent, onSelect) {
-        this.container.innerHTML = '';
-        this.container.className = 'arch-canvas-wrapper';
-        this.headerTitle.textContent = `>_ SKETCH BOARD`;
+            // Generar "Cuadros" (Inputs)
+            vars.forEach(v => {
+                const field = document.createElement('div');
+                field.style.display = 'flex';
+                field.style.flexDirection = 'column';
+                field.style.gap = '6px';
 
-        // Crear Canvas
-        const canvas = document.createElement('canvas');
-        canvas.className = 'arch-canvas-board';
-        canvas.width = 400;
-        canvas.height = 300;
-        const ctx = canvas.getContext('2d');
+                const label = document.createElement('label');
+                label.textContent = v.key;
+                label.style.color = '#a1a1aa';
+                label.style.fontSize = '12px';
+                label.style.fontWeight = '500';
 
-        // Configuración
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = '#00ff9d';
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-
-        // Lógica de Dibujo
-        let drawing = false;
-        const startDraw = (e) => {
-            drawing = true;
-            ctx.beginPath();
-            const rect = canvas.getBoundingClientRect();
-            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
-        };
-        const draw = (e) => {
-            if (!drawing) return;
-            const rect = canvas.getBoundingClientRect();
-            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-            ctx.stroke();
-        };
-        const endDraw = () => {
-            drawing = false;
-            ctx.closePath();
-        };
-
-        canvas.addEventListener('mousedown', startDraw);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', endDraw);
-        canvas.addEventListener('mouseout', endDraw);
-
-        // Toolbar
-        const toolbar = document.createElement('div');
-        toolbar.className = 'arch-canvas-toolbar';
-
-        const clearBtn = document.createElement('button');
-        clearBtn.className = 'arch-tool-btn';
-        clearBtn.textContent = 'CLEAR';
-        clearBtn.onclick = () => ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        const genBtn = document.createElement('button');
-        genBtn.className = 'arch-tool-btn arch-btn-gen';
-        genBtn.textContent = 'COPY & GENERATE';
-        genBtn.onclick = () => {
-            canvas.toBlob(blob => {
-                try {
-                    const item = new ClipboardItem({ "image/png": blob });
-                    navigator.clipboard.write([item]).then(() => {
-                        onSelect(templateContent + "\n\n(PASTE THE IMAGE HERE WITH CTRL+V)");
-                        alert("Sketch copied! Now PASTE (Ctrl+V) inside the chat.");
-                        this.close();
-                    }).catch(err => {
-                        console.error("Clipboard error:", err);
-                        alert("Error copying image via API.");
+                let input;
+                if (v.options) {
+                    // Select Box
+                    input = document.createElement('select');
+                    v.options.forEach(opt => {
+                        const o = document.createElement('option');
+                        o.value = opt;
+                        o.textContent = opt;
+                        input.appendChild(o);
                     });
-                } catch (e) {
-                    alert("Browser not supported for direct copy.");
+                } else {
+                    // Text Input (El "Cuadro")
+                    input = document.createElement('input');
+                    input.type = 'text';
+                    input.placeholder = `Enter ${v.key}...`;
                 }
+
+                Object.assign(input.style, {
+                    background: '#18181b', border: '1px solid #27272a', borderRadius: '6px',
+                    padding: '10px', color: '#fff', fontSize: '13px', outline: 'none',
+                    fontFamily: 'monospace'
+                });
+
+                input.onfocus = () => input.style.borderColor = '#10b981';
+                input.onblur = () => input.style.borderColor = '#27272a';
+                
+                // Guardar referencia
+                input.oninput = (e) => inputValues[v.key] = e.target.value;
+                // Valor inicial
+                inputValues[v.key] = v.options ? v.options[0] : "";
+
+                field.appendChild(label);
+                field.appendChild(input);
+                formContainer.appendChild(field);
+                
+                // Auto-focus en el primer campo
+                if (v === vars[0]) setTimeout(() => input.focus(), 50);
             });
-        };
-        
-        const backBtn = document.createElement('button');
-        backBtn.className = 'arch-tool-btn';
-        backBtn.textContent = 'BACK';
-        backBtn.onclick = () => window.TemplateManager.getAll().then(tpls => this.renderGrid(tpls, onSelect));
 
-        toolbar.appendChild(backBtn);
-        toolbar.appendChild(clearBtn);
-        toolbar.appendChild(genBtn);
-
-        this.container.appendChild(canvas);
-        this.container.appendChild(toolbar);
-    },
-
-    // =========================================================================
-    // 4. MODO SHADOW (GRABADORA DE CONTEXTO)
-    // =========================================================================
-    startShadowMode: function(templates, onSelect) {
-        this.close(); // Cerramos el modal grande
-        
-        // Iniciar el Recorder (definido en content.js)
-        if (window.ShadowRecorder) {
-            window.ShadowRecorder.start();
-        } else {
-            alert("Error: ShadowRecorder not loaded properly.");
-            return;
-        }
-
-        // Crear Indicador Flotante
-        const indicator = document.createElement('div');
-        indicator.className = 'arch-shadow-indicator';
-        indicator.innerHTML = '🔴 REC <br><span style="font-size:10px">Click to Stop</span>';
-        
-        indicator.onclick = () => {
-            // DETENER GRABACIÓN
-            const logs = window.ShadowRecorder.stop();
-            indicator.remove();
+            // Botón de Acción (Generar)
+            const submitBtn = document.createElement('button');
+            submitBtn.textContent = 'INJECT PROMPT';
+            Object.assign(submitBtn.style, {
+                background: '#10b981', color: '#000', border: 'none', borderRadius: '6px',
+                padding: '12px', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px',
+                fontSize: '13px', transition: '0.2s'
+            });
             
-            // Buscar el template SHADOW_OBSERVER
-            const shadowTemplate = templates['SHADOW_OBSERVER'] || "LOG:\n{{INPUT}}";
-            
-            // Inyectar logs
-            const finalPrompt = window.TemplateManager.compile(shadowTemplate, logs);
-            
-            onSelect(finalPrompt);
+            submitBtn.onmouseover = () => submitBtn.style.opacity = '0.9';
+            submitBtn.onmouseout = () => submitBtn.style.opacity = '1';
+
+            submitBtn.onclick = () => {
+                const final = window.TemplateManager.compileVariables(contentTemplate, inputValues);
+                finish(final);
+            };
+
+            // Manejo de Enter
+            formContainer.onkeydown = (e) => {
+                if (e.key === 'Enter') submitBtn.click();
+            };
+
+            formContainer.appendChild(submitBtn);
         };
 
-        document.body.appendChild(indicator);
+        // Función Final: Cerrar e Inyectar
+        const finish = (text) => {
+            this.close();
+            // Retraso técnico para recuperar foco
+            setTimeout(() => onSelectCallback(text), 100);
+        };
+
+        // Clic fuera cierra
+        overlay.onclick = (e) => { if(e.target === overlay) this.close(); };
+
+        panel.appendChild(header);
+        panel.appendChild(listContainer);
+        panel.appendChild(formContainer);
+        overlay.appendChild(panel);
+        document.body.appendChild(overlay);
+        this.overlay = overlay;
     },
 
-    // =========================================================================
-    // UTILIDADES
-    // =========================================================================
     close: function() {
-        if (this.overlay) this.overlay.style.display = 'none';
-    },
-
-    cleanup: function() {
-        const existOv = document.querySelector('.arch-modal-overlay');
-        const existTr = document.querySelector('.arch-trigger');
-        const existInd = document.querySelector('.arch-shadow-indicator');
-        if (existOv) existOv.remove();
-        if (existTr) existTr.remove();
-        if (existInd) existInd.remove();
+        if (this.overlay) {
+            this.overlay.remove();
+            this.overlay = null;
+            this.panel = null;
+        }
     }
 };
