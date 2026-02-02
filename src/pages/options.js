@@ -1,5 +1,5 @@
-// src/pages/options.js - v16.4 (Dynamic Renderer)
-console.log(">arch: Options v16.4 Loaded");
+// src/pages/options.js - v16.5 (Cloud Sync Enabled)
+console.log(">arch: Options v16.5 Loaded");
 
 document.addEventListener('DOMContentLoaded', () => {
     restoreUserOptions(); // Cargar templates del usuario
@@ -25,8 +25,35 @@ function saveOption() {
     chrome.storage.local.get('arch_user_templates', (res) => {
         const templates = res.arch_user_templates || {};
         templates[key] = content;
+        
+        // Guardamos primero en LOCAL (Chrome)
         chrome.storage.local.set({ arch_user_templates: templates }, () => {
-            showStatus(`Guardado [${key}]`, '#10b981');
+            
+            // --- INICIO LÓGICA CLOUD ---
+            // ID Temporal para pruebas (debe coincidir con un UUID válido o RLS desactivado)
+            const TEMP_USER_ID = "00000000-0000-0000-0000-000000000000"; 
+            
+            if (window.ArchCloud) {
+                // Notificar al usuario que estamos intentando subirlo
+                showStatus(`Guardando en Nube...`, '#eab308');
+
+                window.ArchCloud.upsertTemplate({
+                    command_key: key,
+                    content: content
+                }, TEMP_USER_ID)
+                .then(() => {
+                    showStatus(`Guardado (Local + Cloud) [${key}]`, '#10b981');
+                })
+                .catch((err) => {
+                    console.error("Cloud Error:", err);
+                    showStatus(`Guardado Local (Fallo Nube) [${key}]`, '#f59e0b');
+                });
+            } else {
+                // Si no existe cloud.js, solo confirmamos local
+                showStatus(`Guardado [${key}]`, '#10b981');
+            }
+            // --- FIN LÓGICA CLOUD ---
+
             restoreUserOptions();
             keyInput.value = '';
             contentInput.value = '';
@@ -94,7 +121,7 @@ function showStatus(msg, color) {
     const el = document.getElementById('status');
     el.textContent = msg;
     el.style.color = color;
-    setTimeout(() => el.textContent = '', 3000);
+    setTimeout(() => el.textContent = '', 4000);
 }
 
 // --- 2. RENDERIZADO DEL MANUAL (Derecha) ---
@@ -170,8 +197,6 @@ function createCard(key, prompt) {
     const card = document.createElement('div');
     card.className = 'mode-card';
     
-    // Extraer rol o descripción breve del prompt usando Regex
-    // Busca "> ROLE: ..." o toma una descripción genérica
     const roleMatch = prompt.match(/> ROLE: (.*?)(\n|$)/);
     const desc = roleMatch ? roleMatch[1].trim() : "Prompt especializado del sistema >arch.";
 
@@ -182,7 +207,6 @@ function createCard(key, prompt) {
         <div class="mode-desc">${desc.substring(0, 85)}${desc.length > 85 ? '...' : ''}</div>
     `;
     
-    // Opcional: Al hacer click podría copiar el nombre al portapapeles
     card.onclick = () => {
         navigator.clipboard.writeText(key);
         showStatus(`Copiado: ${key}`, '#10b981');
