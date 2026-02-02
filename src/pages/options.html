@@ -12,31 +12,31 @@
       height: 100vh;
       display: flex;
       justify-content: center;
-      overflow: hidden; /* Evitar scroll en el body, solo en paneles */
+      overflow: hidden;
     }
     .container {
       width: 100%;
-      max-width: 1200px;
+      max-width: 1400px;
       display: grid;
-      grid-template-columns: 1fr 1.2fr; /* Columna derecha más ancha para la guía */
+      grid-template-columns: 1fr 1.5fr;
       gap: 0;
       height: 100vh;
     }
     
-    /* --- PANELES --- */
+    /* PANELES */
     .panel {
       padding: 40px;
-      overflow-y: auto; /* Scroll independiente */
+      overflow-y: auto;
       border-right: 1px solid #27272a;
     }
     .panel:last-child { border-right: none; background: #09090b; }
 
-    /* --- TIPOGRAFÍA --- */
+    /* TEXTOS */
     h1 { color: #10b981; font-size: 20px; margin-top: 0; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
     h2 { color: #fff; font-size: 14px; margin-top: 30px; margin-bottom: 15px; border-bottom: 1px solid #27272a; padding-bottom: 8px; }
-    h3 { color: #a1a1aa; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-top: 25px; margin-bottom: 10px; }
+    h3 { color: #52525b; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-top: 25px; margin-bottom: 10px; font-weight: 700; }
 
-    /* --- INPUTS --- */
+    /* FORMULARIOS */
     input, textarea {
       width: 100%;
       background: #18181b;
@@ -53,7 +53,6 @@
     input:focus, textarea:focus { border-color: #10b981; }
     textarea { height: 120px; resize: vertical; margin-top: 10px; }
     
-    /* --- BOTONES --- */
     button {
       padding: 10px 20px;
       border-radius: 6px;
@@ -67,46 +66,23 @@
     #save:hover { opacity: 0.9; }
     
     .status { height: 20px; font-size: 12px; margin-top: 10px; text-align: center; }
-
-    /* --- LISTA TEMPLATES --- */
     #template-list { margin-top: 20px; }
-    
-    /* --- GUÍA (DERECHA) --- */
-    .guide-intro { font-size: 13px; color: #a1a1aa; margin-bottom: 20px; line-height: 1.5; }
-    
-    .mode-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-    }
-    
-    .mode-card {
-      background: #18181b;
-      border: 1px solid #27272a;
-      padding: 12px;
-      border-radius: 6px;
-    }
-    .mode-name {
-      color: #10b981;
-      font-family: monospace;
-      font-weight: bold;
-      font-size: 13px;
-      display: block;
-      margin-bottom: 4px;
-    }
-    .mode-desc {
-      color: #71717a;
-      font-size: 11px;
-      line-height: 1.4;
-    }
 
-    code { background: #27272a; padding: 2px 5px; border-radius: 4px; color: #e4e4e7; font-size: 11px; }
+    /* GUÍA ESTILOS */
+    .guide-intro { font-size: 13px; color: #a1a1aa; margin-bottom: 20px; line-height: 1.5; border-bottom: 1px solid #27272a; padding-bottom: 20px; }
+    .mode-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+    .mode-card { background: #18181b; border: 1px solid #27272a; padding: 15px; border-radius: 8px; transition: transform 0.1s; }
+    .mode-card:hover { border-color: #3f3f46; background: #202023; }
+    .mode-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .mode-name { color: #10b981; font-family: monospace; font-weight: bold; font-size: 13px; }
+    .mode-tag { font-size: 9px; padding: 2px 6px; border-radius: 4px; background: #27272a; color: #71717a; text-transform: uppercase; }
+    .mode-desc { color: #d4d4d8; font-size: 12px; line-height: 1.4; margin-bottom: 8px; }
+    .mode-tip { font-size: 11px; color: #71717a; font-style: italic; }
+    code { background: #27272a; padding: 2px 5px; border-radius: 4px; color: #e4e4e7; font-size: 11px; font-family: monospace; }
     
-    /* Scrollbar bonita */
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: #09090b; }
     ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
   </style>
 </head>
 <body>
@@ -114,129 +90,108 @@
   <div class="container">
     
     <div class="panel">
-      <h1><span>⚙️</span> Configuration</h1>
-      <p class="guide-intro">Create your own custom prompts here. They will appear in the main menu.</p>
+      <h1><span>⚙️</span> Editor de Prompts</h1>
+      <p style="color:#71717a; font-size:12px;">Crea tus propios formatos. Aparecerán en el menú principal.</p>
       
-      <input type="text" id="custom-key" placeholder="TEMPLATE_NAME (e.g., MY_PYTHON)">
-      <textarea id="custom-content" placeholder="Content... Use {{INPUT}} for selection. Use {{VAR:Name:Opt1,Opt2}} for dropdowns."></textarea>
+      <input type="text" id="custom-key" placeholder="NOMBRE_DEL_MODO (Ej: MI_PYTHON)">
+      <textarea id="custom-content" placeholder="Escribe el prompt aquí...&#10;Usa {{INPUT}} donde va el texto seleccionado.&#10;Usa {{VAR:Nombre:Opción1,Opción2}} para crear menús desplegables."></textarea>
       
-      <button id="save">SAVE TEMPLATE</button>
+      <button id="save">GUARDAR TEMPLATE</button>
       <div id="status" class="status"></div>
 
-      <h2>My Templates</h2>
+      <h2>Mis Templates</h2>
       <div id="template-list"></div>
       
-      <button id="reset" style="background:transparent; color:#555; border:1px solid #333; margin-top:40px; width:100%">Reset All Data</button>
+      <button id="reset" style="background:transparent; color:#555; border:1px solid #333; margin-top:40px; width:100%">Borrar Todo</button>
     </div>
 
     <div class="panel">
-      <h1><span>📚</span> Reference Manual</h1>
+      <h1><span>📚</span> Manual de Referencia v16.0</h1>
       
       <div class="guide-intro">
-        <b>Quick Start:</b> Press <code>></code> (Shift+Dot) or click the floating button <code>>_</code> to open the console.<br>
-        Below is the full list of included engineering modes.
+        <b>Cómo empezar:</b> Pulsa <code>></code> (Shift + punto) en cualquier web o haz clic en el botón flotante <code>>_</code>.<br>
+        Lista completa de los 21 modos de ingeniería incluidos:
       </div>
 
       <h3>1. Engineering Core</h3>
       <div class="mode-grid">
         <div class="mode-card">
-          <span class="mode-name">DEV</span>
-          <span class="mode-desc">Senior Architect. Strict JSON output. Best for clean code implementation.</span>
+          <div class="mode-header"><span class="mode-name">DEV</span> <span class="mode-tag">JSON</span></div>
+          <div class="mode-desc">Arquitecto Senior. Genera código limpio y listo para producción.</div>
         </div>
         <div class="mode-card">
-          <span class="mode-name">DB_ARCHITECT</span>
-          <span class="mode-desc">Database design. Enforces 3NF, RLS, and Scalability. Output SQL.</span>
+          <div class="mode-header"><span class="mode-name">DB_ARCHITECT</span> <span class="mode-tag">SQL</span></div>
+          <div class="mode-desc">Diseñador de Bases de Datos (3NF, RLS, FKs).</div>
         </div>
         <div class="mode-card">
-          <span class="mode-name">FIX</span>
-          <span class="mode-desc">Debugs errors. Analyzes logs and provides Root Cause + Fix.</span>
+          <div class="mode-header"><span class="mode-name">FIX</span> <span class="mode-tag">DEBUG</span></div>
+          <div class="mode-desc">Analiza errores y ofrece causa raíz + solución.</div>
         </div>
         <div class="mode-card">
-          <span class="mode-name">LOGIC</span>
-          <span class="mode-desc">Security Audit. Checks for Race Conditions & OWASP flaws.</span>
+          <div class="mode-header"><span class="mode-name">LOGIC</span> <span class="mode-tag">AUDIT</span></div>
+          <div class="mode-desc">Busca vulnerabilidades de seguridad y lógica.</div>
         </div>
         <div class="mode-card">
-          <span class="mode-name">R1_THINK</span>
-          <span class="mode-desc">Deep Reasoning. Forces "Chain of Thought" before answering.</span>
+          <div class="mode-header"><span class="mode-name">R1_THINK</span> <span class="mode-tag">CoT</span></div>
+          <div class="mode-desc">Fuerza el razonamiento profundo paso a paso.</div>
         </div>
       </div>
 
       <h3>2. Agents & Strategy</h3>
       <div class="mode-grid">
         <div class="mode-card">
-          <span class="mode-name">AI_ORCHESTRATOR</span>
-          <span class="mode-desc">Project Manager. Breaks down tasks for other agents.</span>
+          <div class="mode-header"><span class="mode-name">AI_ORCHESTRATOR</span></div>
+          <div class="mode-desc">PM Técnico. Desglosa tareas complejas.</div>
         </div>
         <div class="mode-card">
-          <span class="mode-name">SWARM</span>
-          <span class="mode-desc">Designing Multi-Agent Systems topologies (Mesh, Star).</span>
+          <div class="mode-header"><span class="mode-name">SWARM</span></div>
+          <div class="mode-desc">Diseña sistemas multi-agente.</div>
         </div>
         <div class="mode-card">
-          <span class="mode-name">BLUEPRINT</span>
-          <span class="mode-desc">Technical Spec generator for new Software/Agents.</span>
+          <div class="mode-header"><span class="mode-name">BLUEPRINT</span></div>
+          <div class="mode-desc">Genera especificaciones técnicas completas.</div>
         </div>
         <div class="mode-card">
-          <span class="mode-name">UNIVERSAL_TRUTH</span>
-          <span class="mode-desc">Fact Checker. Removes marketing fluff and bias.</span>
+          <div class="mode-header"><span class="mode-name">UNIVERSAL_TRUTH</span></div>
+          <div class="mode-desc">Verificador de hechos imparcial.</div>
         </div>
       </div>
 
       <h3>3. Visual & Spatial</h3>
       <div class="mode-grid">
         <div class="mode-card">
-          <span class="mode-name">ARCH_NODES</span>
-          <span class="mode-desc">Generates React Flow JSON graphs. visualize logic.</span>
+          <div class="mode-header"><span class="mode-name">ARCH_NODES</span> <span class="mode-tag">GRAPH</span></div>
+          <div class="mode-desc">Genera JSON para gráficos de nodos (React Flow).</div>
         </div>
         <div class="mode-card">
-          <span class="mode-name">SKETCH_TO_UI</span>
-          <span class="mode-desc">Frontend Coder. Converts text descriptions to React/Tailwind.</span>
+          <div class="mode-header"><span class="mode-name">SKETCH_TO_UI</span> <span class="mode-tag">UI</span></div>
+          <div class="mode-desc">Convierte texto a componentes React/Tailwind.</div>
         </div>
         <div class="mode-card">
-          <span class="mode-name">UI_REPLICA</span>
-          <span class="mode-desc">Pixel-Perfect cloner. Use this to copy a design exactly.</span>
+          <div class="mode-header"><span class="mode-name">UI_REPLICA</span></div>
+          <div class="mode-desc">Clonador de interfaces Pixel-Perfect.</div>
         </div>
         <div class="mode-card">
-          <span class="mode-name">UI/UX</span>
-          <span class="mode-desc">Design System Generator. Creates Shadcn/UI specs.</span>
-        </div>
-        <div class="mode-card">
-          <span class="mode-name">VISION</span>
-          <span class="mode-desc">Computer Vision analyst for images and diagrams.</span>
+          <div class="mode-header"><span class="mode-name">VISION</span></div>
+          <div class="mode-desc">Analista de visión por computador.</div>
         </div>
       </div>
 
-      <h3>4. Automation (Workflows)</h3>
+      <h3>4. Automation</h3>
       <div class="mode-grid">
         <div class="mode-card">
-          <span class="mode-name">🔴 REC_SCREEN</span>
-          <span class="mode-desc"><b>Macro Recorder.</b> Describe actions, get a Python/JS script.</span>
+          <div class="mode-header"><span class="mode-name">🔴 REC_SCREEN</span> <span class="mode-tag">MACRO</span></div>
+          <div class="mode-desc">Describe acciones y obtén scripts de automatización.</div>
         </div>
         <div class="mode-card">
-          <span class="mode-name">CHAIN_STEPS</span>
-          <span class="mode-desc">Interactive Guide. Executes task step-by-step (Human-in-loop).</span>
-        </div>
-        <div class="mode-card">
-          <span class="mode-name">LAM_SCRIPT</span>
-          <span class="mode-desc">Browser Automation. Writes robust Playwright/Puppeteer scripts.</span>
-        </div>
-        <div class="mode-card">
-          <span class="mode-name">FLOW</span>
-          <span class="mode-desc">Process Engineer. Generates Mermaid.js charts.</span>
+          <div class="mode-header"><span class="mode-name">LAM_SCRIPT</span></div>
+          <div class="mode-desc">Scripts de navegación robustos (Playwright/Puppeteer).</div>
         </div>
       </div>
-
-      <h3>💡 Pro Tip: Custom Variables</h3>
-      <div style="background:#18181b; padding:15px; border-radius:6px; border:1px solid #27272a; font-size:12px; color:#a1a1aa;">
-        When creating your own templates on the left, you can create <b>Visual Dropdowns</b> easily.<br><br>
-        Syntax: <code style="color:#10b981">{{VAR:Label:Option1,Option2,Option3}}</code><br><br>
-        Example: <code>Mode: {{VAR:Difficulty:Easy,Hard}}</code> will create a dropdown named "Difficulty".
-      </div>
-
+      
       <br><br>
     </div>
-
   </div>
-
   <script src="options.js"></script>
 </body>
 </html>
